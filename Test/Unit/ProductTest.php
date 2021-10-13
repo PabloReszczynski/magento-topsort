@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use \Topsort\Product;
+use \Topsort\Product\;
 
 class ProductTest extends TestCase {
 }
