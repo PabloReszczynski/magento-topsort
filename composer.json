@@ -1,21 +1,38 @@
 {
-    "name": "topsort/magento-topsort",
-    "description": "A magento module for Topsort e-commerce promotions",
-    "license": "MIT",
-    "type": "magento2-module",
-    "authors": [
-        {
-            "name": "Pablo Reszczynski",
-            "email": "pablo@topsort.com"
-        }
-    ],
-    "require-dev": {
-        "phpunit/phpunit": "^9.5"
+  "name": "topsort/module-topsort-integration-magento2",
+  "description": "Topsort e-commerce promotions for Magento 2",
+  "version": "0.1.0",
+  "type": "magento2-module",
+  "license": [
+    "Proprietary, https://www.topsort.com/"
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "magento/framework": "100.*|101.*|102.*|103.*|104.*",
+    "topsort/sdk": "*"
+  },
+  "authors": [
+    {
+      "name": "Pablo Reszczynski",
+      "email": "pablo@topsort.com"
     },
-    "autoload": {
-        "files": [ "registration.php" ],
-        "psr-4": {
-            "Topsort\\Product\\": ""
-        }
+    {
+      "name": "Kyrylo Kostiukov",
+      "email": "kyrylo.kostiukov@bimproject.net"
     }
+  ],
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Topsort\\Integration\\": ""
+    }
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "git@github.com:Topsort/php-sdk.git"
+    }
+  ]
 }

@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="topsort" translate="label" sortOrder="800">
+            <label>Topsort Extension</label>
+        </tab>
+        <section id="topsort_integration" type="text" translate="label" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Integration</label>
+            <tab>topsort</tab>
+            <resource>Topsort_Integration::topsort_integration</resource>
+            <group id="api" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0" translate="label">
+                <label>Api</label>
+                <field id="enabled" type="select" translate="label" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="10">
+                    <label>Topsort API Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="key" type="text" translate="label" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="20">
+                    <label>Topsort API Key</label>
+                </field>
+                <field id="url" type="text" translate="label" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="30">
+                    <label>Topsort API URL</label>
+                </field>
+                <field id="currency_multiplier" type="text" translate="label comment" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="30">
+                    <label>Currency sub-unit multiplier</label>
+                    <comment>The multiplier used to convert the amount expressed in currency sub-units into its main unit (e.g. is 100 for US Dollar since 1 Dollar has 100 Cents).</comment>
+                </field>
+            </group>
+            <group id="catalog" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0" translate="label">
+                <label>Catalog</label>
+                <field id="enabled" type="select" translate="label" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="10">
+                    <label>Enable promoted products in catalog</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="key" type="text" translate="label" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="20">
+                    <label>Amount of promoted products to render</label>
+                    <frontend_class>validate-number</frontend_class>
+                </field>
+                <field id="label_text" type="text" translate="label" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="30">
+                    <label>Sponsored product label text</label>
+                </field>
+            </group>
+            <group id="search" type="text" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0" translate="label">
+                <label>Search Results</label>
+                <field id="enabled" type="select" translate="label" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="10">
+                    <label>Enable promoted products in search results</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="key" type="text" translate="label" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="20">
+                    <label>Amount of promoted products to render</label>
+                    <frontend_class>validate-number</frontend_class>
+                </field>
+                <field id="label_text" type="text" translate="label" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="30">
+                    <label>Sponsored product label text</label>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

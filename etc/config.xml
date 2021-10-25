@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <topsort_integration>
+            <api>
+                <currency_multiplier>100</currency_multiplier>
+                <use_sql_strict_mode>default</use_sql_strict_mode>
+                <url>https://topsort.com</url>
+            </api>
+            <catalog>
+                <label_text>Promoted</label_text>
+            </catalog>
+            <search>
+                <label_text>Promoted</label_text>
+            </search>
+        </topsort_integration>
+    </default>
+</config>
