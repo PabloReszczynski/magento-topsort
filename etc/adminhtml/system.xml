@@ -31,7 +31,7 @@
                     <label>Enable promoted products in catalog</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="key" type="text" translate="label" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="20">
+                <field id="promoted_products_amount" type="text" translate="label" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="20">
                     <label>Amount of promoted products to render</label>
                     <frontend_class>validate-number</frontend_class>
                 </field>
@@ -45,7 +45,7 @@
                     <label>Enable promoted products in search results</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="key" type="text" translate="label" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="20">
+                <field id="promoted_products_amount" type="text" translate="label" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="20">
                     <label>Amount of promoted products to render</label>
                     <frontend_class>validate-number</frontend_class>
                 </field>
