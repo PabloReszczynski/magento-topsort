@@ -10,10 +10,12 @@
             <catalog>
                 <label_text>Promoted</label_text>
                 <promoted_products_amount>2</promoted_products_amount>
+                <minimum_products_amount>5</minimum_products_amount>
             </catalog>
             <search>
                 <label_text>Promoted</label_text>
                 <promoted_products_amount>2</promoted_products_amount>
+                <minimum_products_amount>5</minimum_products_amount>
             </search>
         </topsort_integration>
     </default>

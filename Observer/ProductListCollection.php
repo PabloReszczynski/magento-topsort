@@ -21,17 +21,35 @@ class ProductListCollection implements ObserverInterface
      * @var \Magento\Catalog\Api\ProductRepositoryInterface
      */
     private $productRepository;
+    /**
+     * @var \Magento\Framework\App\Action\Context
+     */
+    private $actionContext;
+    /**
+     * @var \Topsort\Integration\Helper\Data
+     */
+    private $helperData;
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    private $logger;
 
     function __construct(
         CollectionHelper $collectionHelper,
         \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
-        Api $topsortApi
+        Api $topsortApi,
+        \Magento\Framework\App\Action\Context $actionContext,
+        \Topsort\Integration\Helper\Data $helperData,
+        \Psr\Log\LoggerInterface $logger
     )
     {
 
         $this->collectionHelper = $collectionHelper;
         $this->topsortApi = $topsortApi;
         $this->productRepository = $productRepository;
+        $this->actionContext = $actionContext;
+        $this->helperData = $helperData;
+        $this->logger = $logger;
     }
 
     /**
@@ -43,51 +61,83 @@ class ProductListCollection implements ObserverInterface
         /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $collection */
         $collection = $observer->getData('collection');
 
+        try {
+            $action = $this->actionContext->getRequest()->getFullActionName();
+            $promotedProductsCount = 0;
+            $productsLimit = 0;
 
-        $allSku = $this->collectionHelper->getAllSku($collection);
-        //$allSku = ['4RfbhmIx'];
-
-        $sponsoredItemSkuList = $this->topsortApi->getSponsoredProducts($allSku);
-        $sponsoredItemsList = [];
-
-        foreach ($sponsoredItemSkuList as $sponsoredItemSku) {
-            /** @var Product $product */
-            try {
-                $product = $this->productRepository->get($sponsoredItemSku);
-            } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
-                // if the product was not found do nothing
-                continue;
+            $h = $this->helperData;
+            if ($action == 'catalog_category_view' && $h->getIsEnabledOnCatalogPages()) {
+                $promotedProductsCount = $h->getPromotedProductsAmountForCatalogPages();
+                $productsLimit = $h->getMinProductsAmountForCatalogPages();
+            } else if ($action == 'catalogsearch_result_index' && $h->getIsEnabledOnSearch()) {
+                $promotedProductsCount = $h->getPromotedProductsAmountForSearch();
+                $productsLimit = $h->getMinProductsAmountForSearch();
+            } else {
+                // do nothing
+                return;
             }
-            $sponsoredItemsList[] = $product;
+
+            $curPage = $collection->getCurPage();
+            $pageSize = $collection->getPageSize();
+            if ($curPage && $curPage > 1) {
+                // display results only for on the first page if paging is used
+                return;
+            }
+
+            // check the products limit
+            $productsCount = $collection->count();
+            if ($productsLimit > 0 && $pageSize > $productsLimit && $productsCount < $productsLimit) {
+                // productsLimit should be less then the page size
+                // if productsLimit is not reached - no sponsored products should be shown
+                return;
+            }
+
+            $allSku = $this->collectionHelper->getAllSku($collection);
+            // $allSku = ['4RfbhmIx']; // demo SKUs to test
+
+            $sponsoredItemSkuList = $this->topsortApi->getSponsoredProducts($allSku, $promotedProductsCount);
+            $sponsoredItemsList = [];
+
+            foreach ($sponsoredItemSkuList as $sponsoredItemSku) {
+                /** @var Product $product */
+                try {
+                    $product = $this->productRepository->get($sponsoredItemSku);
+                } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+                    // if the product was not found do nothing
+                    continue;
+                }
+                $sponsoredItemsList[] = $product;
+            }
+
+            //$count = 0;
+            if ($sponsoredItemSkuList) {
+                // insert items at the beginning of the collection
+                $items = $collection->getItems();
+                foreach ($collection as $key => $item) {
+                    $collection->removeItemByKey($key);
+                }
+
+                // add new items
+                foreach ($sponsoredItemsList as $item) {
+                    //$count++;
+                    $id = $item->getId();
+                    $item->setIsPromoted(true);
+                    $item->setId($id . '-promoted');
+                    $collection->addItem($item);
+                    $item->setId($id);
+                }
+
+                // re-add $items
+                foreach ($items as $item) {
+                    //$count++;
+                    $collection->addItem($item);
+                }
+            }
+        } catch (\Exception $e) {
+            // something did not work, we write the exception to the log and return the collection to its initial state
+            $this->logger->critical($e);
+            $collection->clear();
         }
-
-        //$pageSize = $collection->getPageSize();
-        //$count = 0;
-        if ($sponsoredItemSkuList) {
-            $items = $collection->getItems();
-            foreach ($collection as $key => $item) {
-                $collection->removeItemByKey($key);
-            }
-
-            // add new items
-            foreach ($sponsoredItemsList as $item) {
-                //$count++;
-                $id = $item->getId();
-                $item->setIsPromoted(true);
-                $item->setId($id . '-promoted');
-                $collection->addItem($item);
-                $item->setId($id);
-            }
-
-            // re-add $items
-            foreach ($items as $item) {
-//                if ($count >= $pageSize) {
-//                    break;
-//                }
-                //$count++;
-                $collection->addItem($item);
-            }
-        }
-
     }
 }
