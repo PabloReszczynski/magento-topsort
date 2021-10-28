@@ -11,8 +11,8 @@
 
     <span class="product-image-wrapper"
           style="padding-bottom: <?= ($block->getRatio() * 100) ?>%;">
-        <?php if ($this->getIsPromoted()) : ?>
-            <div class="promoted-indicator" style="position: absolute; z-index: 100;">Promoted</div>
+        <?php if ($block->getIsPromoted()) : ?>
+            <div class="topsort-promoted-indicator"><?= $block->escapeHtml($block->getPromotedLabelText()) ?></div>
         <?php endif; ?>
         <img class="<?= $block->escapeHtmlAttr($block->getClass()) ?>"
             <?= $block->escapeHtmlAttr($block->getCustomAttributes()) ?>

@@ -50,12 +50,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return $this->scopeConfig->isSetFlag(self::CONF_SPONSORSHIP_IN_SEARCH_ENABLED, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
     }
 
-    function getPromotedTextForCatalogPages()
+    function getPromotedLabelTextForCatalogPages()
     {
         return $this->scopeConfig->getValue(self::CONF_CATALOG_LABEL_TEXT, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
     }
 
-    function getPromotedTextForSearch()
+    function getPromotedLabelTextForSearch()
     {
         return $this->scopeConfig->getValue(self::CONF_SEARCH_LABEL_TEXT, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
     }
