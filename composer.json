@@ -9,7 +9,7 @@
   "minimum-stability": "dev",
   "require": {
     "magento/framework": "100.*|101.*|102.*|103.*|104.*",
-    "topsort/sdk": "*"
+    "topsort/sdk": "1.0.1"
   },
   "authors": [
     {
