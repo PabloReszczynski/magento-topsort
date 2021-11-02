@@ -34,8 +34,6 @@ class InvoiceCreation implements ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $collection */
-        $collection = $observer->getData('collection');
         /** @var \Magento\Sales\Model\Order\Invoice $invoice */
         $invoice = $observer->getData('invoice');
         /** @var \Magento\Sales\Model\Order $order */
