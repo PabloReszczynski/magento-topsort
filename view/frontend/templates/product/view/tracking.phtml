@@ -1,0 +1,23 @@
+<?php
+/**
+ * @var \Magento\Catalog\Block\Product\View $block
+ */
+$url = $block->getUrl('topsort/product/tracking', [
+    'id' => $block->getProduct()->getId(),
+    'auction_id' => $block->getRequest()->getParam('auction_id', null)
+]);
+?>
+<script type="text/javascript">
+    require(["jquery"],function($) {
+        $(document).ready(function() {
+            $.ajax({
+                url: "<?= $url ?>",
+                type: 'POST',
+                data: {
+                    referrer: document.referrer
+                },
+                dataType: 'json'
+            });
+        });
+    });
+</script>

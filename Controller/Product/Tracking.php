@@ -9,14 +9,17 @@
  * @author Kyrylo Kostiukov <kyrylo.kostiukov@bimproject.net>
  * @license Proprietary
  */
-namespace Topsort\Integration\Observer;
+namespace Topsort\Integration\Controller\Product;
 
-use Magento\Framework\Event\ObserverInterface;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultFactory;
 use Topsort\Integration\Model\Api;
 use Topsort\Integration\Model\RefererUrl;
 
-class ProductViewAction implements ObserverInterface
+class Tracking extends \Magento\Framework\App\Action\Action
 {
+
     /**
      * @var Api
      */
@@ -38,26 +41,26 @@ class ProductViewAction implements ObserverInterface
         Api $topsortApi,
         RefererUrl $refererUrl,
         \Psr\Log\LoggerInterface $logger,
-        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository
+        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
+        Context $context
     )
     {
         $this->topsortApi = $topsortApi;
         $this->refererUrl = $refererUrl;
         $this->productRepository = $productRepository;
         $this->logger = $logger;
+        parent::__construct($context);
     }
 
     /**
-     * @param \Magento\Framework\Event\Observer $observer
-     * @return void
+     * @inheritDoc
      */
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute()
     {
-        /** @var \Magento\Framework\App\RequestInterface $request */
-        $request = $observer->getData('request');
+        $referrerUrl = $this->getRequest()->getParam('referrer');
+        $refererRouteData = $this->refererUrl->getRefererRouteData($referrerUrl);
 
-        $refererRouteData = $this->refererUrl->getRefererRouteData();
-
+        $request = $this->getRequest();
         $productId = $request->getParam('id');
 
         try {
@@ -69,11 +72,16 @@ class ProductViewAction implements ObserverInterface
         }
         $auctionId = $request->getParam('auction_id', null);
 
-        $this->topsortApi->trackProductClick(
-            $refererRouteData['url_path'],
-            'position_0',
+        $apiCallResult = $this->topsortApi->trackProductClick(
+            empty($refererRouteData['url_path']) ? 'unknown' : $refererRouteData['url_path'],
+            1,
             $product->getSku(),
             $auctionId
         );
+
+        /** @var \Magento\Framework\Controller\Result\Json $result */
+        $result = $this->resultFactory->create(ResultFactory::TYPE_JSON);
+        $result->setData($apiCallResult);
+        return $result;
     }
 }

@@ -94,7 +94,7 @@ class ProductListCollection implements ObserverInterface
     {
         /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $collection */
         $collection = $observer->getData('collection');
-
+        $initialItems = $collection->getItems();
         try {
             $action = $this->actionContext->getRequest()->getFullActionName();
             $promotedProductsCount = 0;
@@ -130,9 +130,9 @@ class ProductListCollection implements ObserverInterface
             $allSku = $this->collectionHelper->getAllSku($collection);
             // $allSku = ['4RfbhmIx']; // demo SKUs to test
 
-            $sponsoredProductsResponse = $this->topsortApi->getSponsoredProducts($allSku, $promotedProductsCount);
-            $sponsoredItemSkuList = $sponsoredProductsResponse['products'];
-            $auctionId = $sponsoredProductsResponse['auction_id'];
+            $result = $this->topsortApi->getSponsoredProducts($allSku, $promotedProductsCount);
+            $sponsoredItemSkuList = isset($result['products']) ? $result['products'] : [];
+            $auctionId = isset($result['auction_id']) ? $result['auction_id'] : null;
             $sponsoredItemsList = [];
 
             foreach ($sponsoredItemSkuList as $sponsoredItemSku) {
@@ -190,7 +190,15 @@ class ProductListCollection implements ObserverInterface
         } catch (\Exception $e) {
             // something did not work, we write the exception to the log and return the collection to its initial state
             $this->logger->critical($e);
-            $collection->clear();
+
+            foreach ($collection as $key => $item) {
+                $collection->removeItemByKey($key);
+            }
+            foreach ($initialItems as $item) {
+                $collection->addItem($item);
+            }
+
+            // Do not use method $collection->clear() here. It has a bug: clear() does not reset the _isFiltersRendered flag.
         }
     }
 }
