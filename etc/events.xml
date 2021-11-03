@@ -1,6 +1,20 @@
 <?xml version="1.0"?>
+<!--
+/**
+ * @copyright Copyright (c) TopSort 2021 - All Rights Reserved
+ */
+-->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
     <event name="catalog_block_product_list_collection">
-        <observer name="add_promotions_to_product_list" instance="Topsort\Integration\Observer\ProductListCollection"/>
+        <observer name="topsort_add_promotions_to_product_list" instance="Topsort\Integration\Observer\ProductListCollection"/>
+    </event>
+    <event name="controller_action_predispatch_catalog_product_view">
+        <observer name="topsort_product_click_tracking" instance="Topsort\Integration\Observer\ProductViewAction"/>
+    </event>
+    <event name="sales_order_invoice_register">
+        <observer name="topsort_product_purchase_tracking" instance="Topsort\Integration\Observer\InvoiceCreation"/>
+    </event>
+    <event>
+
     </event>
 </config>

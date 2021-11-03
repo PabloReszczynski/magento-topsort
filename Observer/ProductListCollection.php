@@ -1,11 +1,21 @@
 <?php
-
+/**
+ * TopSort Magento Extension
+ *
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ *
+ * @copyright Copyright (c) TopSort 2021 - All Rights Reserved
+ * @author Kyrylo Kostiukov <kyrylo.kostiukov@bimproject.net>
+ * @license Proprietary
+ */
 namespace Topsort\Integration\Observer;
 
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Event\ObserverInterface;
 use Topsort\Integration\Model\Api;
 use Topsort\Integration\Model\Product\CollectionHelper;
+use Magento\UrlRewrite\Model\UrlFinderInterface;
 
 class ProductListCollection implements ObserverInterface
 {
@@ -33,6 +43,22 @@ class ProductListCollection implements ObserverInterface
      * @var \Psr\Log\LoggerInterface
      */
     private $logger;
+    /**
+     * @var UrlFinderInterface
+     */
+    private $urlFinder;
+    /**
+     * @var \Magento\Framework\App\Response\RedirectInterface
+     */
+    private $redirect;
+    /**
+     * @var \Magento\Framework\UrlInterface
+     */
+    private $url;
+    /**
+     * @var \Magento\Framework\App\Request\PathInfo
+     */
+    private $pathInfoService;
 
     function __construct(
         CollectionHelper $collectionHelper,
@@ -40,7 +66,11 @@ class ProductListCollection implements ObserverInterface
         Api $topsortApi,
         \Magento\Framework\App\Action\Context $actionContext,
         \Topsort\Integration\Helper\Data $helperData,
-        \Psr\Log\LoggerInterface $logger
+        \Psr\Log\LoggerInterface $logger,
+        UrlFinderInterface $urlFinder,
+        \Magento\Framework\App\Response\RedirectInterface $redirect,
+        \Magento\Framework\UrlInterface $url,
+        \Magento\Framework\App\Request\PathInfo $pathInfoService
     )
     {
 
@@ -50,6 +80,10 @@ class ProductListCollection implements ObserverInterface
         $this->actionContext = $actionContext;
         $this->helperData = $helperData;
         $this->logger = $logger;
+        $this->urlFinder = $urlFinder;
+        $this->redirect = $redirect;
+        $this->url = $url;
+        $this->pathInfoService = $pathInfoService;
     }
 
     /**
@@ -96,7 +130,9 @@ class ProductListCollection implements ObserverInterface
             $allSku = $this->collectionHelper->getAllSku($collection);
             // $allSku = ['4RfbhmIx']; // demo SKUs to test
 
-            $sponsoredItemSkuList = $this->topsortApi->getSponsoredProducts($allSku, $promotedProductsCount);
+            $sponsoredProductsResponse = $this->topsortApi->getSponsoredProducts($allSku, $promotedProductsCount);
+            $sponsoredItemSkuList = $sponsoredProductsResponse['products'];
+            $auctionId = $sponsoredProductsResponse['auction_id'];
             $sponsoredItemsList = [];
 
             foreach ($sponsoredItemSkuList as $sponsoredItemSku) {
@@ -123,6 +159,7 @@ class ProductListCollection implements ObserverInterface
                     //$count++;
                     $id = $item->getId();
                     $item->setIsPromoted(true);
+                    $item->setAuctionId($auctionId);
                     $item->setId($id . '-promoted');
                     $collection->addItem($item);
                     $item->setId($id);
@@ -134,6 +171,22 @@ class ProductListCollection implements ObserverInterface
                     $collection->addItem($item);
                 }
             }
+
+            // track impressions
+            $impressions = [];
+            foreach ($collection as $item) {
+                /** @var Product $item */
+                $impression = [
+                    'product_id' => $item->getId(),
+                    'sku' => $item->getSku()
+                ];
+                if ($item->getIsPromoted() === true) {
+                    $impression['auctionId'] = $item->getAuctionId();
+                }
+                $impressions[] = $impression;
+            }
+
+            $this->topsortApi->trackImpressions($action, $impressions);
         } catch (\Exception $e) {
             // something did not work, we write the exception to the log and return the collection to its initial state
             $this->logger->critical($e);

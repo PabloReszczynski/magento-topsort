@@ -1,4 +1,14 @@
 <?php
+/**
+ * TopSort Magento Extension
+ *
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ *
+ * @copyright Copyright (c) TopSort 2021 - All Rights Reserved
+ * @author Kyrylo Kostiukov <kyrylo.kostiukov@bimproject.net>
+ * @license Proprietary
+ */
 declare(strict_types=1);
 
 namespace Topsort\Integration\Plugin\Block\Product;
