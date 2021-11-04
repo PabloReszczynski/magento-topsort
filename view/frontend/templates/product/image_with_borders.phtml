@@ -6,13 +6,16 @@ echo $originalBlock->toHtml();
 ?>
 
 <?php if ($block->getIsPromoted()) : ?>
+<span class="topsort-promoted-product-identifier-<?= /* @noEscape */ $block->getProductId() ?>"></span>
 <script type="text/javascript">
     require(["jquery"],function($) {
         $(document).ready(function() {
             let promotedLabel = document.createElement( "div" );
             promotedLabel.setAttribute('class', "topsort-promoted-indicator");
             promotedLabel.appendChild(document.createTextNode('<?= $block->escapeHtml($block->getPromotedLabelText()) ?>'));
-            $('.product-image-container-<?= /* @noEscape */ $block->getProductId() ?> .product-image-wrapper')[0].prepend(promotedLabel);
+            $('.topsort-promoted-product-identifier-<?= /* @noEscape */ $block->getProductId() ?>').parents('.product-item-info').find('.product-image-wrapper').prepend(promotedLabel);
+
+            //jQuery('#product-item-info_338 a[href="#"]') // on-page action-links
         });
     });
 </script>
