@@ -1,23 +1,19 @@
 <?php
-/**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
- */
+/** @var $block \Magento\Catalog\Block\Product\Image */
+$originalBlock = clone $block;
+$originalBlock->setTemplate('Magento_Catalog::product/image_with_borders.phtml');
+echo $originalBlock->toHtml();
 ?>
-<?php /** @var $block \Magento\Catalog\Block\Product\Image */ ?>
 
-<span class="product-image-container"
-      style="width:<?= $block->escapeHtmlAttr($block->getWidth()) ?>px;">
-
-    <span class="product-image-wrapper"
-          style="padding-bottom: <?= ($block->getRatio() * 100) ?>%;">
-        <?php if ($block->getIsPromoted()) : ?>
-            <div class="topsort-promoted-indicator"><?= $block->escapeHtml($block->getPromotedLabelText()) ?></div>
-        <?php endif; ?>
-        <img class="<?= $block->escapeHtmlAttr($block->getClass()) ?>"
-            <?= $block->escapeHtmlAttr($block->getCustomAttributes()) ?>
-            src="<?= $block->escapeUrl($block->getImageUrl()) ?>"
-            max-width="<?= $block->escapeHtmlAttr($block->getWidth()) ?>"
-            max-height="<?= $block->escapeHtmlAttr($block->getHeight()) ?>"
-            alt="<?= /* @noEscape */ $block->stripTags($block->getLabel(), null, true) ?>"/></span>
-</span>
+<?php if ($block->getIsPromoted()) : ?>
+<script type="text/javascript">
+    require(["jquery"],function($) {
+        $(document).ready(function() {
+            let promotedLabel = document.createElement( "div" );
+            promotedLabel.setAttribute('class', "topsort-promoted-indicator");
+            promotedLabel.appendChild(document.createTextNode('<?= $block->escapeHtml($block->getPromotedLabelText()) ?>'));
+            $('.product-image-container-<?= /* @noEscape */ $block->getProductId() ?> .product-image-wrapper')[0].prepend(promotedLabel);
+        });
+    });
+</script>
+<?php endif; ?>

@@ -185,17 +185,20 @@ class Api
                 'session' => $session,
                 'items' => $apiItems,
                 'purchasedAt' => new \DateTime(),
-                'id' => $invoiceNumber
+                'id' => $orderNumber
             ];
 
             $result = $sdk->report_purchase($data)->wait();
-            $this->logger->info('TOPSORT: Purchase tracking. Invoice ' . $invoiceNumber . ' was sent to Topsort.');
+            $this->logger->info('TOPSORT: Purchase tracking. Invoice ' . $orderNumber . ' was sent to Topsort.');
             $this->logger->debug("TOPSORT: Purchase tracking.\nRequest: " . $this->jsonHelper->jsonEncode($data) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
             return $result;
         } catch (\Topsort\TopsortException $e) {
             $prevException = $e->getPrevious();
 
             if ($prevException && $prevException instanceof \GuzzleHttp\Exception\ClientException) {
+                if (isset($data)) {
+                    $this->logger->critical('TOPSORT_REQUEST:' . $this->jsonHelper->jsonEncode($data));
+                }
                 $this->logger->critical($prevException);
                 $this->logger->critical('TOPSORT_RESPONSE:' . (string)$prevException->getResponse()->getBody());
             }
@@ -235,6 +238,9 @@ class Api
             $prevException = $e->getPrevious();
 
             if ($prevException && $prevException instanceof \GuzzleHttp\Exception\ClientException) {
+                if (isset($data)) {
+                    $this->logger->critical('TOPSORT_REQUEST:' . $this->jsonHelper->jsonEncode($data));
+                }
                 $this->logger->critical($prevException);
                 $this->logger->critical('TOPSORT_RESPONSE:' . (string)$prevException->getResponse()->getBody());
             }

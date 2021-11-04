@@ -40,12 +40,14 @@ class RefererUrl
         $this->url = $url;
     }
 
-    function getRefererRouteData()
+    function getRefererRouteData($referrerUrl)
     {
-        $refererUrl = $this->redirect->getRefererUrl();
+        if (!$referrerUrl) {
+            $referrerUrl = $this->redirect->getRefererUrl();
+        }
         // remove base URL part
         $baseUrl = $this->url->getBaseUrl();
-        $urlPathWithQuery = str_replace($baseUrl, '', $refererUrl);
+        $urlPathWithQuery = str_replace($baseUrl, '', $referrerUrl);
         // remove query string part
         $urlPathWithQueryArray = explode('?', $urlPathWithQuery);
         $urlPath = current($urlPathWithQueryArray);
