@@ -13,6 +13,7 @@ $url = $block->getUrl('topsort/product/tracking', [
             $.ajax({
                 url: "<?= $url ?>",
                 type: 'POST',
+                async: true,
                 data: {
                     referrer: document.referrer
                 },

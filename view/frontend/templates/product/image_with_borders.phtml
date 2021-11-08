@@ -3,17 +3,43 @@
 $originalBlock = clone $block;
 $originalBlock->setTemplate('Magento_Catalog::product/image_with_borders.phtml');
 echo $originalBlock->toHtml();
+$keyElementClassName = 'topsort-product-identifier-' . $block->getProductId() . '-' . uniqid();
+
+$trackingUrl = $block->getUrl('topsort/product/tracking', [
+    'id' => $block->getProductId(),
+    'auction_id' => $block->getAuctionId()
+]);
 ?>
 
-<?php if ($block->getIsPromoted()) : ?>
+<span class="<?= $keyElementClassName ?>"></span>
 <script type="text/javascript">
     require(["jquery"],function($) {
+
+        function trackProductClick(){
+            $.ajax({
+                url: "<?= $trackingUrl ?>",
+                type: 'POST',
+                async: true,
+                data: {
+                    referrer: window.location.href
+                },
+                dataType: 'json'
+            });
+        }
+
         $(document).ready(function() {
-            let promotedLabel = document.createElement( "div" );
-            promotedLabel.setAttribute('class', "topsort-promoted-indicator");
-            promotedLabel.appendChild(document.createTextNode('<?= $block->escapeHtml($block->getPromotedLabelText()) ?>'));
-            $('.product-image-container-<?= /* @noEscape */ $block->getProductId() ?> .product-image-wrapper')[0].prepend(promotedLabel);
+            <?php if ($block->getIsPromoted()) : ?>
+                let promotedLabel = document.createElement( "div" );
+                promotedLabel.setAttribute('class', "topsort-promoted-indicator");
+                promotedLabel.appendChild(document.createTextNode('<?= $block->escapeHtml($block->getPromotedLabelText()) ?>'));
+                $('.<?= $keyElementClassName ?>').parents('.product-item-info').find('.product-image-wrapper').prepend(promotedLabel);
+            <?php endif; ?>
+
+            // handle clicks on action-links
+            $('.<?= $keyElementClassName ?>').parents('.product-item-info').find('a[href="#"]').on('click', trackProductClick);
+
+            // handle clicks on buttons
+            $('.<?= $keyElementClassName ?>').parents('.product-item-info').find('button').on('click', trackProductClick);
         });
     });
 </script>
-<?php endif; ?>

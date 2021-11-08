@@ -58,6 +58,7 @@ class ImageFactory
         if ($product->getIsPromoted() === true) {
             $image->setIsPromoted(true);
             $image->setPromotedLabelText(__($labelText));
+            $image->setAuctionId($product->getAuctionId());
         }
         $image->setTemplate('Topsort_Integration::product/image_with_borders.phtml');
         return $image;
