@@ -100,7 +100,7 @@ class Api
 
     function trackImpressions($page, $impressions)
     {
-        if (!$this->helper->getIsEnabled()) {
+        if (empty($impressions) || !$this->helper->getIsEnabled()) {
             return [];
         }
         try {
