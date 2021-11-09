@@ -18,7 +18,7 @@ $trackingUrl = $block->getUrl('topsort/product/tracking', [
         function trackProductClick(){
             $.ajax({
                 url: "<?= $trackingUrl ?>",
-                type: 'POST',
+                type: 'GET',
                 async: true,
                 data: {
                     referrer: window.location.href
