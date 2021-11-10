@@ -11,10 +11,24 @@
  */
 namespace Topsort\Integration\Controller\Api;
 
+use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\ResultFactory;
 
 class Vendors extends \Magento\Framework\App\Action\Action
 {
+    /**
+     * @var \Magento\Eav\Model\Config
+     */
+    private $eavConfig;
+
+    function __construct(
+        Context $context,
+        \Magento\Eav\Model\Config $eavConfig
+    )
+    {
+        $this->eavConfig = $eavConfig;
+        parent::__construct($context);
+    }
 
     /**
      * @inheritDoc
@@ -37,40 +51,47 @@ class Vendors extends \Magento\Framework\App\Action\Action
             echo 'Invalid token';exit;
         }
 
+        // The last vendor ID on the previous page, relative to the requested page. When provided,
+        // will get the vendors (ordered alphabetically) which come after this vendor.
+        $prev = intval($this->getRequest()->getParam('prev', 0));
+
+        // The first vendor ID on the next page, relative to the requested page. When provided,
+        // will get the vendors (ordered alphabetically) which come before this vendor.
+        $next = intval($this->getRequest()->getParam('next', 0));
+
+        $vendorAttributeCode = 'manufacturer';
+
+        $attribute = $this->eavConfig->getAttribute('catalog_product', $vendorAttributeCode);
+        $options = $attribute->getSource()->getAllOptions();
+        $vendors = [];
+        foreach ($options as $option) {
+            $value = intval($option['value']);
+            if (!$value) {
+                // do not return the "Not selected" option
+                continue;
+            }
+            if ($prev !== 0 && $value <= $prev){
+                //filter out "prev" pages
+                continue;
+            }
+            if ($next !== 0 && $value >= $next){
+                //filter out "next" pages
+                continue;
+            }
+            $vendors[$value] = $option['label'];
+        }
+        $resultList = [];
+        foreach ($vendors as $id => $name) {
+            $resultList[] = [
+                'id' => strval($id),
+                'name' => $name,
+                //'logoURL' => 'https://...'
+            ];
+        }
+
         /** @var \Magento\Framework\Controller\Result\Json $result */
         $result = $this->resultFactory->create(ResultFactory::TYPE_JSON);
-
-        $vendors = [
-            [
-                'id' => 'C0n7J6j0WySR',
-                'name' => 'Cervecera Cuello Negro SpA',
-                'logoURL' => 'https://www.cuellonegro.cl/wp-content/uploads/2017/05/logo_web.png',
-            ],
-            [
-                'id' => 'y7v6kSGGUUFn',
-                'name' => 'Cerveceria Chile SA',
-            ],
-            [
-                'id' => 'vhvg6ioBj5fk',
-                'name' => 'Cerveceria Coda',
-            ],
-            [
-                'id' => 'IMwMGVfSsEpQ',
-                'name' => 'Cerveceria Kunstmann Limitada',
-            ],
-            [
-                'id' => 'zo8UXchnFWZu',
-                'name' => 'Cervecerias Unidas SA',
-            ],
-            [
-                'id' => '9SiwYqqL8vdG',
-                'name' => 'Huyghe Brewery',
-                'logoURL' => 'https://media-exp1.licdn.com/dms/image/C4E0BAQFE4e-wq7TlCw/company-logo_200_200/0/1519861983671?e=2159024400&v=beta&t=ZoishDxg4-kKH9fJBXRkBc_N0adqUpBmGqdB1TM5sYg',
-            ]
-        ];
-
-        $result->setData($vendors);
-
+        $result->setData($resultList);
         return $result;
     }
 }
