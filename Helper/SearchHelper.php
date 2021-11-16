@@ -23,15 +23,21 @@ class SearchHelper extends \Magento\Framework\App\Helper\AbstractHelper
      * @var \Magento\Catalog\Model\CategoryFactory
      */
     private $categoryFactory;
+    /**
+     * @var Data
+     */
+    private $dataHelper;
 
     function __construct(
         \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $collectionFactory,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory,
+        \Topsort\Integration\Helper\Data $dataHelper,
         Context $context
     )
     {
         $this->collectionFactory = $collectionFactory;
         $this->categoryFactory = $categoryFactory;
+        $this->dataHelper = $dataHelper;
         parent::__construct($context);
     }
 
@@ -65,8 +71,14 @@ class SearchHelper extends \Magento\Framework\App\Helper\AbstractHelper
                 ]
             ]);
         }
-        // TODO selected only required attributes
-        $collection->addAttributeToSelect('*');
+
+        $collection->addAttributeToSelect(array_unique([
+            $this->dataHelper->getTopsortBrandsAttributeCode(),
+            $this->dataHelper->getTopsortVendorAttributeCode(),
+            'price',
+            'description',
+            'short_description'
+        ]));
 
         if (!empty($categoryId)) {
             $categoryId = $this->categoryFactory->create()->load($categoryId);

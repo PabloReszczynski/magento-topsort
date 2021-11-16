@@ -216,7 +216,7 @@ class Products extends \Magento\Framework\App\Action\Action implements CsrfAware
      * @return array
      * @throws LocalizedException
      */
-    protected function parseProductApiUrl(): array
+    protected function parseProductApiUrl()
     {
         /** @var \Magento\Framework\UrlInterface $url */
         $url = \Magento\Framework\App\ObjectManager::getInstance()
@@ -244,7 +244,7 @@ class Products extends \Magento\Framework\App\Action\Action implements CsrfAware
      * @param \Magento\Eav\Model\Entity\Attribute\Source\AbstractSource $brandSource
      * @return array
      */
-    protected function prepareProductData(Product $product, $vendorSource, $brandSource): array
+    protected function prepareProductData(Product $product, $vendorSource, $brandSource)
     {
         $sku = $product->getSku();
         $vendorId = $product->getData($this->dataHelper->getTopsortVendorAttributeCode());
@@ -262,6 +262,7 @@ class Products extends \Magento\Framework\App\Action\Action implements CsrfAware
             // image not found
             $imageUrl = "";
         }
+        $multiplier = $this->dataHelper->getCurrencyMultiplier();
         return [
             'id' => $sku,
             'name' => $product->getName(),
@@ -269,7 +270,7 @@ class Products extends \Magento\Framework\App\Action\Action implements CsrfAware
             'vendorID' => intval($vendorId),
             'vendorName' => $vendorName ? $vendorName : "",
             'stock' => $this->catalogHelper->getStockQty($product->getId()),
-            'price' => $product->getPrice(),
+            'price' => intval($product->getPrice() * $multiplier),
             'imageURL' => $imageUrl,
             'brandID' => intval($brandId),
             'brandName' => $brandName ? $brandName : "",
