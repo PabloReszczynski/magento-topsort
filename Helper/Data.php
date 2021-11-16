@@ -88,4 +88,45 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $this->scopeConfig->getValue(self::CONF_SEARCH_PROMOTED_PRODUCTS_AMOUNT, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
     }
+
+    /**
+     * @param \Magento\Framework\Controller\Result\Json $result
+     * @param \Magento\Framework\App\RequestInterface $request
+     * @param \Magento\Framework\App\ResponseInterface $response
+     * @return boolean
+     */
+    public function validateApiAuthorization($result, $request, $response)
+    {
+        $authHeader = $request->getHeader('Authorization');
+        if (!$authHeader) {
+            $result->setHttpResponseCode(401);
+            $result->setData(['error' => 'No Authorization header']);
+            return false;
+        }
+        // TODO move the token into config
+        $validToken = 'dfajgnpahdgprgjnfdkj4054375nmcnorythqe';
+        $authHeaderParts = explode(' ', $authHeader);
+        if (count($authHeaderParts) !== 2 || $authHeaderParts[0] != 'Bearer') {
+            $result->setHttpResponseCode(401);
+            $result->setData(['error' => 'Invalid Authorization header']);
+            return false;
+        }
+        $token = $authHeaderParts[1];
+        if ($token != $validToken) {
+            $result->setHttpResponseCode(401);
+            $result->setData(['error' => 'Invalid token']);
+            return false;
+        }
+        return true;
+    }
+
+    function getCatalogRequestPageSize()
+    {
+        return 50;
+    }
+
+    public function getTopsortVendorAttributeCode()
+    {
+        return 'manufacturer';
+    }
 }

@@ -21,13 +21,25 @@ class Categories extends \Magento\Framework\App\Action\Action
      * @var \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory
      */
     private $categoryCollectionFactory;
+    /**
+     * @var \Topsort\Integration\Helper\CatalogHelper
+     */
+    private $catalogHelper;
+    /**
+     * @var \Topsort\Integration\Helper\Data
+     */
+    private $dataHelper;
 
     function __construct(
         \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory,
+        \Topsort\Integration\Helper\Data $dataHelper,
+        \Topsort\Integration\Helper\CatalogHelper $catalogHelper,
         Context $context
     )
     {
         $this->categoryCollectionFactory = $categoryCollectionFactory;
+        $this->catalogHelper = $catalogHelper;
+        $this->dataHelper = $dataHelper;
         parent::__construct($context);
     }
 
@@ -36,68 +48,59 @@ class Categories extends \Magento\Framework\App\Action\Action
      */
     public function execute()
     {
+        /** @var \Magento\Framework\Controller\Result\Json $result */
+        $result = $this->resultFactory->create(ResultFactory::TYPE_JSON);
         // validate Bearer header
-        $authHeader = $this->getRequest()->getHeader('Authorization');
-        if (!$authHeader) {
-            echo 'No Authorization header';exit;
-        }
-        // TODO move the token into config
-        $validToken = 'dfajgnpahdgprgjnfdkj4054375nmcnorythqe';
-        $authHeaderParts = explode(' ', $authHeader);
-        if (count($authHeaderParts) !== 2 || $authHeaderParts[0] != 'Bearer') {
-            echo 'Invalid Authorization header';exit;
-        }
-        $token = $authHeaderParts[1];
-        if ($token != $validToken) {
-            echo 'Invalid token';exit;
+        if (!$this->dataHelper->validateApiAuthorization($result, $this->getRequest(), $this->getResponse())) {
+            return $result;
         }
 
-        // The last category ID on the previous page, relative to the requested page.
-        // When provided, will get the categories (ordered alphabetically) which come after this category.
-        $prev = $this->getRequest()->getParam('prev');
+        // "prev" Page token
+        $prev = intval($this->getRequest()->getParam('prev', 0));
 
-        // The first category ID on the next page, relative to the requested page.
-        // When provided, will get the categories (ordered alphabetically) which come before this category.
-        $next = $this->getRequest()->getParam('next');
+        // "next" Page token
+        $next = intval($this->getRequest()->getParam('next', 0));
 
         /** @var \Magento\Catalog\Model\ResourceModel\Category\Collection $collection */
         $collection = $this->categoryCollectionFactory->create();
-        $collection->setOrder('entity_id');
+        $collection->setOrder('name');
         $collection->addAttributeToSelect('name');
-        if ($prev !== null) {
-            $collection->addFieldToFilter('entity_id', ['gt' => $prev]);
+        $pageSize = $this->dataHelper->getCatalogRequestPageSize();
+        $collection->setPageSize($pageSize);
+        $lastPage = $collection->getLastPageNumber();
+
+        $pageNum = $prev > 0 ? $prev : ($next > 0 ? $next : 1);
+
+        if ($pageNum > $lastPage) {
+            $result->setHttpResponseCode(404);
+            $result->setData([
+                'prev' => null,
+                'next' => $lastPage,
+                'response' => []
+            ]);
+            return $result;
         }
-        if ($next !== null) {
-            $collection->addFieldToFilter('entity_id', ['lt' => $next]);
-        }
+        $collection->setPage(intval($pageNum), $pageSize);
+
         $categories = [];
         foreach ($collection as $item) {
             /** @var \Magento\Catalog\Model\Category $item */
-            /** @var \Magento\Catalog\Model\Category $parent */
-            /** @var \Magento\Catalog\Model\ResourceModel\Category\Collection $parents */
-            $parents = $this->categoryCollectionFactory->create();
-            $parentIds = $item->getParentIds();
-            $parents->addFieldToFilter('entity_id', array('in' => $parentIds));
-            $parents->addAttributeToSelect('name');
-            $path = '';
-            $parentNames = [];
-            foreach ($parents as $parent) {
-                $parentNames[$parent->getId()] = $parent->getName();
-            }
-            foreach ($parentIds as $parentId) {
-                $path .= $parentNames[$parentId] . '/';
-            }
-            $path .= $item->getName();
-
             $categories[] = [
                 'id' => strval($item->getId()),
-                'name' => $path
+                'name' => $this->catalogHelper->getCategoryFullName($item)
             ];
         }
 
-        /** @var \Magento\Framework\Controller\Result\Json $result */
-        $result = $this->resultFactory->create(ResultFactory::TYPE_JSON);
-        $result->setData($categories);
+        if (empty($categories)) {
+            $result->setHttpResponseCode(404);
+        }
+
+        $result->setData([
+            'prev' => $pageNum > 1 ? $pageNum - 1 : null,
+            'next' => $pageNum >= $lastPage ? null : $pageNum + 1,
+            'response' => $categories
+        ]);
+
         return $result;
     }
 }

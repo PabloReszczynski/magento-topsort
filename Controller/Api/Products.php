@@ -11,6 +11,8 @@
  */
 namespace Topsort\Integration\Controller\Api;
 
+use Magento\Catalog\Model\Product;
+use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
@@ -20,10 +22,63 @@ class Products extends \Magento\Framework\App\Action\Action implements CsrfAware
 {
 
     /**
+     * @var \Magento\Catalog\Api\ProductRepositoryInterface
+     */
+    private $productRepository;
+    /**
+     * @var \Magento\Eav\Model\Config
+     */
+    private $eavConfig;
+    /**
+     * @var \Topsort\Integration\Helper\CatalogHelper
+     */
+    private $catalogHelper;
+    /**
+     * @var \Magento\Catalog\Model\CategoryFactory
+     */
+    private $categoryFactory;
+    /**
+     * @var \Topsort\Integration\Helper\ProductImageHelper
+     */
+    private $productImageHelper;
+    /**
+     * @var \Topsort\Integration\Helper\SearchHelper
+     */
+    private $searchHelper;
+    /**
+     * @var \Topsort\Integration\Helper\Data
+     */
+    private $dataHelper;
+
+    function __construct(
+        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
+        \Topsort\Integration\Helper\Data $dataHelper,
+        \Topsort\Integration\Helper\CatalogHelper $catalogHelper,
+        \Topsort\Integration\Helper\ProductImageHelper $productImageHelper,
+        \Magento\Catalog\Model\CategoryFactory $categoryFactory,
+        \Magento\Eav\Model\Config $eavConfig,
+        \Topsort\Integration\Helper\SearchHelper $searchHelper,
+        Context $context
+    )
+    {
+        $this->productRepository = $productRepository;
+        $this->eavConfig = $eavConfig;
+        $this->catalogHelper = $catalogHelper;
+        $this->productImageHelper = $productImageHelper;
+        $this->categoryFactory = $categoryFactory;
+        $this->searchHelper = $searchHelper;
+        $this->dataHelper = $dataHelper;
+        parent::__construct($context);
+    }
+
+    /**
      * @inheritDoc
      */
     public function execute()
     {
+        /** @var \Magento\Framework\Controller\Result\Json $result */
+        $result = $this->resultFactory->create(ResultFactory::TYPE_JSON);
+
         // ger URL current path
         /** @var \Magento\Framework\UrlInterface $url */
         $url = \Magento\Framework\App\ObjectManager::getInstance()
@@ -34,31 +89,25 @@ class Products extends \Magento\Framework\App\Action\Action implements CsrfAware
         $queryPart = isset($requestUriParts[1]) ? $requestUriParts[1] : '';
         $baseUrlMeta = parse_url($url->getBaseUrl());
         if (substr($path, 0, strlen($baseUrlMeta['path'])) !== $baseUrlMeta['path']) {
-            echo 'url is not matching the base url';exit;
+            $result->setHttpResponseCode(400);
+            $result->setData(['error' => 'Wrong URL. Url is not matching the configured base url.']);
+            return $result;
         }
         $path = trim(substr($requestUriParts[0], strlen($baseUrlMeta['path'])), '/');
 
         // validate Bearer header
-        $authHeader = $this->getRequest()->getHeader('Authorization');
-        if (!$authHeader) {
-            echo 'No Authorization header';exit;
+        if (!$this->dataHelper->validateApiAuthorization($result, $this->getRequest(), $this->getResponse())) {
+            return $result;
         }
-        // TODO move the token into config
-        $validToken = 'dfajgnpahdgprgjnfdkj4054375nmcnorythqe';
-        $authHeaderParts = explode(' ', $authHeader);
-        if (count($authHeaderParts) !== 2 || $authHeaderParts[0] != 'Bearer') {
-            echo 'Invalid Authorization header';exit;
-        }
-        $token = $authHeaderParts[1];
-        if ($token != $validToken) {
-            echo 'Invalid token';exit;
-        }
-        /** @var \Magento\Framework\Controller\Result\Json $result */
-        $result = $this->resultFactory->create(ResultFactory::TYPE_JSON);
+
+        $attribute = $this->eavConfig->getAttribute('catalog_product', $this->dataHelper->getTopsortVendorAttributeCode());
+        $source = $attribute->getSource();
 
         if ($path === 'topsort/api/products') {
             if ($this->getRequest()->getMethod() !== 'POST') {
-                echo 'Only post requests are supported';
+                $result->setHttpResponseCode(400);
+                $result->setData(['error' => 'Only post requests are supported']);
+                return $result;
             }
 
             // read and validate post request data
@@ -69,61 +118,142 @@ class Products extends \Magento\Framework\App\Action\Action implements CsrfAware
                     throw new \Exception('Body should contain an array of product ids');
                 }
             } catch (\Exception $e) {
-                echo 'Invalid body format. ' . $e->getMessage();
-                exit;
+                $result->setHttpResponseCode(400);
+                $result->setData(['error' => 'Invalid body format. ' . $e->getMessage()]);
+                return $result;
             }
 
-            // prepare mock response
             $products = [];
             foreach ($productSkuList as $sku) {
-                $products[] = [
+
+                try {
+                    /** @var Product $product */
+                    $product = $this->productRepository->get($sku);
+                } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+                    // if the product was not found do nothing
+                    continue;
+                }
+
+                $vendorId = $product->getData($this->dataHelper->getTopsortVendorAttributeCode());
+                $vendorName = $source->getOptionText($vendorId);
+                $categoryIds = $product->getCategoryIds();
+                /** @var \Magento\Catalog\Model\Category $category */
+                $category = $this->categoryFactory->create();
+                $categoryId = isset($categoryIds[0]) ? $categoryIds[0] : 0; // TODO note: only first category from this list is returned
+                $category->load($categoryId);
+                try {
+                    $imageUrl = $this->productImageHelper->getImageUrl($product);
+                } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+                    // image not found
+                    $imageUrl = "";
+                }
+                $productData = [
                     'id' => $sku,
-                    'name' => 'Product with SKU ' . $sku,
-                    'description' => 'Nombrada «Mejor cerveza del mundo» en 1998 en el Certamen Mundial de Cerveza de Chicago, Illinois, Estados Unidos, es una cerveza que seguro te encantará.',
-                    'vendorID' => '9SiwYqqL8vdG',
-                    'vendorName' => 'Huyghe Brewery',
-                    'stock' => rand(126, 1000),
-                    'price' => rand(14900, 24900),
-                    'imageURL' => 'https://r.btcdn.co/r/eyJzaG9wX2lkIjozMzU4LCJnIjoiMjYweCJ9/1759e16e6314a24/669830-Cerveza_Delirium_Tremens_Botella_330cc_x6.png',
-                    'brandID' => 'N8G6bGjS1YfF',
-                    'brandName' => 'Delirium Tremens',
-                    'categoryID' => 'ahEDqV5uhjj8',
-                    'categoryName' => 'Cervezas/Oscuras/Triple Ale',
+                    'name' => $product->getName(),
+                    'description' => $product->getShortDescription(),
+                    'vendorID' => intval($vendorId),
+                    'vendorName' => $vendorName ? $vendorName : "",
+                    'stock' => $this->catalogHelper->getStockQty($product->getId()),
+                    'price' => $product->getPrice(),
+                    'imageURL' => $imageUrl,
+                    'brandID' => intval($vendorId),
+                    'brandName' => $vendorName ? $vendorName : "",
+                    'categoryID' => $categoryId,
+                    'categoryName' => $this->catalogHelper->getCategoryFullName($category)
                 ];
+                $products[] = $productData;
             }
             $result->setData($products);
         } else if ($path === 'topsort/api/products/search') {
             // handle the search API request
             $query = [];
-            $queryPart = parse_str($queryPart, $query);
+            parse_str($queryPart, $query);
+            // The search string provided by the user. When a blank string is provided, the string
+            // should match all products (e.g. all products with a given category ID).
             $searchString = isset($query['search']) ? $query['search'] : '';
+            // Only retrieve products whose category matches the provided ID.
             $categoryString = isset($query['categoryID']) ? $query['categoryID'] : '';
+            // "prev" Page token
+            $prev = intval($this->getRequest()->getParam('prev', 0));
 
-            $productSkuList = [
-                'productFromSearch1',
-                'productFromSearch2',
-                'productFromSearch3'
-            ];
+            // "next" Page token
+            $next = intval($this->getRequest()->getParam('next', 0));
 
-            $products = [];
-            foreach ($productSkuList as $sku) {
-                $products[] = [
-                    'id' => $sku,
-                    'name' => 'Product with SKU ' . $sku,
-                    'description' => 'Product for search query "' . $searchString . '"',
-                    'vendorID' => '9SiwYqqL8vdG',
-                    'vendorName' => 'Huyghe Brewery',
-                    'stock' => rand(126, 1000),
-                    'price' => rand(14900, 24900),
-                    'imageURL' => 'https://r.btcdn.co/r/eyJzaG9wX2lkIjozMzU4LCJnIjoiMjYweCJ9/1759e16e6314a24/669830-Cerveza_Delirium_Tremens_Botella_330cc_x6.png',
-                    'brandID' => 'N8G6bGjS1YfF',
-                    'brandName' => 'Delirium Tremens',
-                    'categoryID' => isset($categoryString) ? $categoryString : 'ahEDqV5uhjj8',
-                    'categoryName' => 'Cervezas/Oscuras/Triple Ale',
-                ];
+            $pageNum = $prev > 0 ? $prev : ($next > 0 ? $next : 1);
+
+            $pageSize = $this->dataHelper->getCatalogRequestPageSize();
+            $productsSearch = $this->searchHelper->searchProducts($searchString, $categoryString, $pageNum, $pageSize);
+            //var_export($productsSearch->count());exit;
+            $lastPage = $productsSearch->getLastPageNumber();
+
+            if ($pageNum > $lastPage) {
+                $result->setHttpResponseCode(404);
+                $result->setData([
+                    'prev' => null,
+                    'next' => $lastPage,
+                    'response' => []
+                ]);
+                return $result;
             }
 
-            $result->setData($products);
+            $products = [];
+            $count = 0;
+            $newNext = null;
+            $minId = null;
+            foreach ($productsSearch as $product) {
+                /** @var Product $product */
+                $count++;
+                $id = $product->getId();
+                $minId = ($minId === null || $id < $minId) ? $id : $minId;
+                if ($count > $pageSize) {
+                    $newNext = $product->getId();
+                    break;
+                }
+                $vendorId = $product->getData($this->dataHelper->getTopsortVendorAttributeCode());
+                $vendorName = $source->getOptionText($vendorId);
+                $categoryIds = $product->getCategoryIds();
+                /** @var \Magento\Catalog\Model\Category $category */
+                $category = $this->categoryFactory->create();
+                $categoryId = isset($categoryIds[0]) ? $categoryIds[0] : 0; // TODO note: only first category from this list is returned
+                $category->load($categoryId);
+                try {
+                    $imageUrl = $this->productImageHelper->getImageUrl($product);
+                } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+                    // image not found
+                    $imageUrl = "";
+                }
+                $sku = $product->getSku();
+                $productData = [
+                    'id' => $sku,
+                    'name' => $product->getName(),
+                    'description' => $product->getShortDescription(),
+                    'vendorID' => intval($vendorId),
+                    'vendorName' => $vendorName ? $vendorName : "",
+                    'stock' => $this->catalogHelper->getStockQty($product->getId()),
+                    'price' => $product->getPrice(),
+                    'imageURL' => $imageUrl,
+                    'brandID' => intval($vendorId),
+                    'brandName' => $vendorName ? $vendorName : "",
+                    'categoryID' => $categoryId,
+                    'categoryName' => $this->catalogHelper->getCategoryFullName($category)
+                ];
+                $products[] = $productData;
+            }
+            if (empty($products)) {
+                $result->setHttpResponseCode(404);
+            }
+            $resultData = [
+                'prev' => $pageNum > 1 ? $pageNum - 1 : null,
+                'next' => $pageNum >= $lastPage ? null : $pageNum + 1,
+                'response' => $products
+            ];
+            if (!empty($prev)) {
+                $resultData['prev'] = $minId;
+            }
+            if (!empty($newNext)) {
+                $resultData['next'] = $newNext;
+            }
+            $result->setData($resultData);
         }
         return $result;
     }
