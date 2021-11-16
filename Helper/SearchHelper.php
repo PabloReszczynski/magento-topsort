@@ -65,6 +65,7 @@ class SearchHelper extends \Magento\Framework\App\Helper\AbstractHelper
                 ]
             ]);
         }
+        // TODO selected only required attributes
         $collection->addAttributeToSelect('*');
 
         if (!empty($categoryId)) {

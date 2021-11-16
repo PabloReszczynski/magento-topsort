@@ -129,4 +129,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return 'manufacturer';
     }
+
+    public function getTopsortBrandsAttributeCode()
+    {
+        return 'manufacturer';
+    }
 }
