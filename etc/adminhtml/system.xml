@@ -12,7 +12,7 @@
         <section id="topsort_integration" type="text" translate="label" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Sponsored Products</label>
             <tab>topsort</tab>
-            <resource>Topsort_Integration::topsort_integration</resource>
+            <resource>Topsort_Integration::sponsored_products</resource>
             <group id="api" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" translate="label">
                 <label>Api</label>
                 <field id="enabled" type="select" translate="label" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="10">
@@ -64,6 +64,31 @@
                 </field>
                 <field id="label_text" type="text" translate="label" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="40">
                     <label>Sponsored product label text</label>
+                </field>
+            </group>
+        </section>
+        <section id="topsort_catalog_service" type="text" translate="label" sortOrder="2" showInDefault="1"
+                 showInWebsite="1" showInStore="1">
+            <label>Catalog Service API</label>
+            <tab>topsort</tab>
+            <resource>Topsort_Integration::catalog_service</resource>
+            <group id="api" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" translate="label">
+                <label>Catalog Service API Settings</label>
+                <field id="enabled" type="select" translate="label" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="10">
+                    <label>Enable catalog service APIs</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="access_token" type="text" translate="label" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="40">
+                    <label>Access Token</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="vendors_attribute_code" type="text" translate="label" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="40">
+                    <label>Topsort Vendors Attribute Code</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="brands_attribute_code" type="text" translate="label" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="40">
+                    <label>Topsort Brands Attribute Code</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
         </section>

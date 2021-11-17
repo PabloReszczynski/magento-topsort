@@ -149,7 +149,7 @@ class Products extends \Magento\Framework\App\Action\Action implements CsrfAware
 
                 $pageNum = $prev > 0 ? $prev : ($next > 0 ? $next : 1);
 
-                $pageSize = $this->dataHelper->getCatalogRequestPageSize();
+                $pageSize = $this->dataHelper->getCatalogResultsPageSize();
                 $productsSearch = $this->searchHelper->searchProducts($searchString, $categoryString, $pageNum, $pageSize);
 
                 $lastPage = $productsSearch->getLastPageNumber();

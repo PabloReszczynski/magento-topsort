@@ -65,7 +65,7 @@ class Categories extends \Magento\Framework\App\Action\Action
         $collection = $this->categoryCollectionFactory->create();
         $collection->setOrder('name');
         $collection->addAttributeToSelect('name');
-        $pageSize = $this->dataHelper->getCatalogRequestPageSize();
+        $pageSize = $this->dataHelper->getCatalogResultsPageSize();
         $collection->setPageSize($pageSize);
         $lastPage = $collection->getLastPageNumber();
 

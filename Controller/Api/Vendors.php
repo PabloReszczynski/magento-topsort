@@ -54,7 +54,7 @@ class Vendors extends \Magento\Framework\App\Action\Action
             return $result;
         }
 
-        $pageSize = $this->dataHelper->getCatalogRequestPageSize();
+        $pageSize = $this->dataHelper->getCatalogResultsPageSize();
 
         // "prev" Page token
         $prev = intval($this->getRequest()->getParam('prev', 0));
