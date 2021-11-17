@@ -1,7 +1,7 @@
 {
   "name": "topsort/module-topsort-integration-magento2",
   "description": "Topsort e-commerce promotions for Magento 2",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "magento2-module",
   "license": [
     "Proprietary, https://www.topsort.com/"
