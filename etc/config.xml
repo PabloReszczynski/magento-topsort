@@ -23,5 +23,11 @@
                 <minimum_products_amount>5</minimum_products_amount>
             </search>
         </topsort_integration>
+        <topsort_catalog_service>
+            <api>
+                <vendors_attribute_code>manufacturer</vendors_attribute_code>
+                <brands_attribute_code>manufacturer</brands_attribute_code>
+            </api>
+        </topsort_catalog_service>
     </default>
 </config>

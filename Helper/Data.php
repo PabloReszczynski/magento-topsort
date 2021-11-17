@@ -28,6 +28,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     const CONF_SEARCH_MINIMUM_PRODUCT_AMOUNT = 'topsort_integration/search/minimum_products_amount';
     const CONF_SEARCH_LABEL_TEXT = 'topsort_integration/search/label_text';
 
+    const CONF_CATALOG_SERVICE_ENABLED = 'topsort_catalog_service/api/enabled';
+    const CONF_CATALOG_SERVICE_ACCESS_TOKEN = 'topsort_catalog_service/api/access_token';
+    const CONF_VENDORS_ATTRIBUTE_CODE = 'topsort_catalog_service/api/vendors_attribute_code';
+    const CONF_BRANDS_ATTRIBUTE_CODE = 'topsort_catalog_service/api/brands_attribute_code';
 
     function getApiKey()
     {
@@ -87,5 +91,65 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     function getPromotedProductsAmountForSearch()
     {
         return $this->scopeConfig->getValue(self::CONF_SEARCH_PROMOTED_PRODUCTS_AMOUNT, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+    }
+
+    /**
+     * @param \Magento\Framework\Controller\Result\Json $result
+     * @param \Magento\Framework\App\RequestInterface $request
+     * @param \Magento\Framework\App\ResponseInterface $response
+     * @return boolean
+     */
+    public function validateApiAuthorization($result, $request, $response)
+    {
+        if (!$this->getIsCatalogServiceEnabled()) {
+            $result->setHttpResponseCode(404);
+            $result->setData(['error' => 'API is Disabled']);
+            return false;
+        }
+        $authHeader = $request->getHeader('Authorization');
+        if (!$authHeader) {
+            $result->setHttpResponseCode(401);
+            $result->setData(['error' => 'No Authorization header']);
+            return false;
+        }
+        $validToken = $this->getCatalogServiceApiAccessToken();
+        $authHeaderParts = explode(' ', $authHeader);
+        if (count($authHeaderParts) !== 2 || $authHeaderParts[0] != 'Bearer') {
+            $result->setHttpResponseCode(401);
+            $result->setData(['error' => 'Invalid Authorization header']);
+            return false;
+        }
+        $token = $authHeaderParts[1];
+        if ($token != $validToken) {
+            $result->setHttpResponseCode(401);
+            $result->setData(['error' => 'Invalid token']);
+            return false;
+        }
+        return true;
+    }
+
+    function getCatalogResultsPageSize()
+    {
+        return 50;
+    }
+
+    public function getTopsortVendorAttributeCode()
+    {
+        return $this->scopeConfig->getValue(self::CONF_VENDORS_ATTRIBUTE_CODE, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getTopsortBrandsAttributeCode()
+    {
+        return $this->scopeConfig->getValue(self::CONF_BRANDS_ATTRIBUTE_CODE, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+    }
+
+    protected function getCatalogServiceApiAccessToken()
+    {
+        return $this->scopeConfig->getValue(self::CONF_CATALOG_SERVICE_ACCESS_TOKEN, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+    }
+
+    function getIsCatalogServiceEnabled()
+    {
+        return $this->scopeConfig->isSetFlag(self::CONF_CATALOG_SERVICE_ENABLED, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
     }
 }

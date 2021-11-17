@@ -12,7 +12,7 @@ $url = $block->getUrl('topsort/product/tracking', [
         $(document).ready(function() {
             $.ajax({
                 url: "<?= $url ?>",
-                type: 'POST',
+                type: 'GET',
                 async: true,
                 data: {
                     referrer: document.referrer

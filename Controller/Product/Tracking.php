@@ -12,7 +12,6 @@
 namespace Topsort\Integration\Controller\Product;
 
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Topsort\Integration\Model\Api;
 use Topsort\Integration\Model\RefererUrl;
