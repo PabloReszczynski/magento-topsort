@@ -69,7 +69,7 @@ class Vendors extends \Magento\Framework\App\Action\Action
         $pageNum = $prev > 0 ? $prev : ($next > 0 ? $next : 1);
         $resultList = [];
         $totalPages = ceil(count($vendors) / $pageSize);
-        $vendors = array_slice($vendors, ($pageNum - 1) * $pageSize + 1, $pageSize, true);
+        $vendors = array_slice($vendors, ($pageNum - 1) * $pageSize, $pageSize, true);
         foreach ($vendors as $id => $name) {
             $resultList[] = [
                 'id' => strval($id),
