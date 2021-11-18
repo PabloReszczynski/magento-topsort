@@ -75,6 +75,7 @@ class SearchHelper extends \Magento\Framework\App\Helper\AbstractHelper
         $collection->addAttributeToSelect(array_unique([
             $this->dataHelper->getTopsortBrandsAttributeCode(),
             $this->dataHelper->getTopsortVendorAttributeCode(),
+            'name',
             'price',
             'description',
             'short_description'
