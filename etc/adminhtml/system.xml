@@ -14,7 +14,7 @@
             <tab>topsort</tab>
             <resource>Topsort_Integration::sponsored_products</resource>
             <group id="api" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" translate="label">
-                <label>Api</label>
+                <label>API</label>
                 <field id="enabled" type="select" translate="label" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="10">
                     <label>Topsort API Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
