@@ -20,14 +20,14 @@ class ProductAttributeCodes
      */
     private $attributeFactory;
 
+    protected static $_options;
+
     function __construct(
         \Magento\Catalog\Model\ResourceModel\Eav\Attribute $attributeFactory
     )
     {
         $this->attributeFactory = $attributeFactory;
     }
-
-    protected static $_options;
 
     public function toOptionArray()
     {

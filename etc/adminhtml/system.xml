@@ -25,9 +25,10 @@
                 <field id="url" type="text" translate="label" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
                     <label>Topsort API URL</label>
                 </field>
-                <field id="currency_multiplier" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
+                <field id="currency_multiplier" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
                     <label>Currency sub-unit multiplier</label>
                     <comment>The multiplier used to convert the amount expressed in currency sub-units into its main unit (e.g. is 100 for US Dollar since 1 Dollar has 100 Cents).</comment>
+                    <source_model>Topsort\Integration\Model\System\Config\Source\CurrencyMultiplier</source_model>
                 </field>
             </group>
             <group id="catalog" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" translate="label">
