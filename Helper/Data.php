@@ -120,7 +120,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return false;
         }
         $token = $authHeaderParts[1];
-        if ($token != $validToken) {
+        if (empty($validToken) || $token !== $validToken) {
             $result->setHttpResponseCode(401);
             $result->setData(['error' => 'Invalid token']);
             return false;
