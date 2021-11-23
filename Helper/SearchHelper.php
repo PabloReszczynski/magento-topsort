@@ -77,6 +77,7 @@ class SearchHelper extends \Magento\Framework\App\Helper\AbstractHelper
             $this->dataHelper->getTopsortVendorAttributeCode(),
             'name',
             'price',
+            'image',
             'description',
             'short_description'
         ]));
