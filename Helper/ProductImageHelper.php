@@ -56,8 +56,10 @@ class ProductImageHelper extends \Magento\Framework\App\Helper\AbstractHelper
         $this->appEmulation->startEnvironmentEmulation($storeId, \Magento\Framework\App\Area::AREA_FRONTEND, true);
 
         // now the image helper will get the correct URL with the frontend environment emulated
-        $imageUrl = $this->imageHelperFactory->create()
-            ->init($product, 'product_thumbnail_image')->getUrl();
+        /** @var \Magento\Catalog\Helper\Image $helper */
+        $helper = $this->imageHelperFactory->create();
+        $imageUrl = $helper
+            ->init($product, 'product_base_image')->getUrl();
         // end emulation
         $this->appEmulation->stopEnvironmentEmulation();
 
