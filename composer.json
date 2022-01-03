@@ -3,9 +3,7 @@
   "description": "Topsort e-commerce promotions for Magento 2",
   "version": "0.1.2",
   "type": "magento2-module",
-  "license": [
-    "Proprietary, https://www.topsort.com/"
-  ],
+  "license": "osl-3.0",
   "minimum-stability": "dev",
   "require": {
     "magento/framework": "100.*|101.*|102.*|103.*|104.*",
