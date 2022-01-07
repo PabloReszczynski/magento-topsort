@@ -1,6 +1,7 @@
 # Topsort Magento Extension
 
-[![Latest Stable Version](http://poser.pugx.org/topsort/module-topsort-integration-magento2/v)](https://packagist.org/packages/topsort/module-topsort-integration-magento2) [![License](http://poser.pugx.org/topsort/module-topsort-integration-magento2/license)](https://packagist.org/packages/topsort/module-topsort-integration-magento2) [!![logo](https://assets.website-files.com/61a717c57f45d64e5e24eebf/61a71e2ea91bcb71b7228291_logo.svg)
+[![Latest Stable Version](http://poser.pugx.org/topsort/module-topsort-integration-magento2/v)](https://packagist.org/packages/topsort/module-topsort-integration-magento2) [![License](http://poser.pugx.org/topsort/module-topsort-integration-magento2/license)](https://packagist.org/packages/topsort/module-topsort-integration-magento2)
+
 
 ## Auction-based advertising *made simple*
 
