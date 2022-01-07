@@ -1,6 +1,6 @@
 # Topsort Magento Extension
 
-![logo](https://assets.website-files.com/61a717c57f45d64e5e24eebf/61a71e2ea91bcb71b7228291_logo.svg)
+[![Latest Stable Version](http://poser.pugx.org/topsort/module-topsort-integration-magento2/v)](https://packagist.org/packages/topsort/module-topsort-integration-magento2) [![License](http://poser.pugx.org/topsort/module-topsort-integration-magento2/license)](https://packagist.org/packages/topsort/module-topsort-integration-magento2) [!![logo](https://assets.website-files.com/61a717c57f45d64e5e24eebf/61a71e2ea91bcb71b7228291_logo.svg)
 
 ## Auction-based advertising *made simple*
 
@@ -88,7 +88,7 @@ You'll need:
 - **Enabled sponsored products in catalog/search**: Set to *Yes* in order to start running auction with sponsored products in catalog and search views of the site.
 - **Amount of sponsored products to render**: Specifies the maximum amount of sponsored products that might be displayed on the page.
 - **Add sponsored products if amount of products greater than**: You may avoid displaying sponsored products if the catalog or search result pages have too few items on it.
-- **Sponsored product label text:**: The text for the label that will be displayed on top of sponsored products in the list of products.
+- **Sponsored product label text**: The text for the label that will be displayed on top of sponsored products in the list of products.
 
 
 ## Limitations
