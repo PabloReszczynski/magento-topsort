@@ -1,35 +1,41 @@
-## Topsort Magento Extension
+# Topsort Magento Extension
 
-A Magento 2 extension for integrating [Topsort](https://topsort.com) auction-based promoted listings into a Marketplace.
+![logo](https://assets.website-files.com/61a717c57f45d64e5e24eebf/61a71e2ea91bcb71b7228291_logo.svg)
 
-### System Requirements
+## Auction-based advertising *made simple*
+
+Topsort provides **auction-based native ad infrastructure and APIs** for the world's top marketplaces and multi-brand retailers to monetize fast and stress-free.
+
+This Magento 2 extension allows a Magento-based marketplace to integrate with Topsort's API hassle free.
+
+## System Requirements
 
 - Magento >= 2.3.7 <= to 2.4.3.
 - Composer v2
 
-### Installation
+## Installation
 
-#### 1. Install the module with Composer
+### 1. Install the module with Composer
 
 ```
 composer require topsort/module-topsort-integration-magento2
 ```
 
-#### 2. Finish the installation by running the required magento commands:
+### 2. Finish the installation by running the required magento commands:
 
 ```
 bin/magento module:enable Topsort_Integration
 bin/magento setup:upgrade
 ```
 
-### Configuration
+## Configuration
 
-#### Catalog Service API
+### Catalog Service API
 
 The Catalog Service API gives Topsort access to your marketplace product
 catalog for the creation of advertising campaigns..
 
-##### Setting up vendors
+#### Setting up vendors
 
 By default, Magento does not have a notion of vendor or merchant. You may use the
 default product attribute `manufacturer` or create your own attribute.
@@ -53,14 +59,14 @@ Please, note that once the list of options is defined and your vendors already
 got their products and start using the system, you should not remove them from
 the list of vendors (the option associated with the vendor should not be removed).
 
-##### Setting up Brands
+#### Setting up Brands
 
 Topsort Brands are configured in a very similar way to Topsort Vendors.
 Please, see the [previous section](#setting-up-vendors) on how to configure them.
 In the simplest setup the same attribute might be representing both: vendors and
 brands.
 
-##### Activating the Catalog Service API
+#### Activating the Catalog Service API
 
 The Catalog Service API could be activated and configured in Magento configuration section: (Stores → Configuration → Topsort → Catalog Service APIs)
 
@@ -70,7 +76,7 @@ You'll need:
 - **Topsort Vendor Attribute code**: This property is defining the product attribute code used to identify Topsort Vendors
 - **Topsort Brand Attribute code**: This property is defining the product attribute code used to identify Topsort Vendors
 
-##### Configuration for Sponsored Products
+#### Configuration for Sponsored Products
 
 The behavior of sponsored products can be configured in Magento configuration under Store → Configuration → Topsort → Sponsored Products.
 
@@ -85,7 +91,7 @@ You'll need:
 - **Sponsored product label text:**: The text for the label that will be displayed on top of sponsored products in the list of products.
 
 
-### Limitations
+## Limitations
 
 The full-page cache on category pages needs to be disabled for sponsored products to render.
 Promoted products will increase the number of products displayed on the first page in the product lists: in search results and on the catalog pages.
