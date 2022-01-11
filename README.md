@@ -49,12 +49,12 @@ By filling in the attribute options you can define what vendors products can be 
 
 **Option 2. Adding a new "*Vendor*" attribute**
 
-By using the standard Magento functionality, we can configure add a new `vendor` product attribute.
+By using the standard Magento functionality, we can configure a new `vendor` product attribute.
 This can be done by clicking on “*Add New Attribute*” under the “*Product Attributes*” page (Menu → Stores → Attributes → Product).
 
 Similar to the configuration or `manufacturer` attribute, the new attribute
-should be configured as a “Drop-down” list. By configuring the attribute Options
-you can provide the list of Vendors that will later be shared with Topsort system.
+should be configured as a “Drop-down” list. By configuring the attribute options
+you will provide the list of Vendors that will later be shared with the Topsort API.
 
 Please, note that once the list of options is defined and your vendors already
 got their products and start using the system, you should not remove them from
@@ -69,7 +69,7 @@ brands.
 
 #### Activating the Catalog Service API
 
-The Catalog Service API could be activated and configured in Magento configuration section: (Stores → Configuration → Topsort → Catalog Service APIs)
+The Catalog Service API can be activated and configured in Magento configuration section: (Stores → Configuration → Topsort → Catalog Service APIs)
 
 You'll need:
 
