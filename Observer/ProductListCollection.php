@@ -92,9 +92,12 @@ class ProductListCollection implements ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
+        return;
         /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $collection */
         $collection = $observer->getData('collection');
         $initialItems = $collection->getItems();
+        // TODO Bug fixing is needed:
+        //var_export($collection->getPageSize());exit;
         try {
             $action = $this->actionContext->getRequest()->getFullActionName();
             $promotedProductsCount = 0;

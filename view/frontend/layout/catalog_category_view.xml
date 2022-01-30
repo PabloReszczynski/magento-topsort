@@ -4,10 +4,13 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
         <css src="Topsort_Integration::css/topsort.css"/>
+        <!--<link src="Topsort_Integration::js/promoted-products.js"/>-->
     </head>
     <body>
         <referenceContainer name="content">
-            <block class="Magento\Framework\View\Element\Text" name="category.products.list.non-cacheable" cacheable="false" ttl="0" />
+            <!-- TODO remove this in order to activate usage of fp cache -->
+            <block class="Topsort\Integration\Block\PromotedProductsLoader" name="topsort.promoted-products-loader"
+                   template="Topsort_Integration::topsort/promoted_products_loader.phtml" cacheable="false" ttl="0" />
         </referenceContainer>
     </body>
 </page>
