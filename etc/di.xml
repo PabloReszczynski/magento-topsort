@@ -11,4 +11,10 @@
     <type name="Magento\Catalog\Model\Product\Url">
         <plugin name="topsort_product_plugin" type="Topsort\Integration\Plugin\Product\Url" />
     </type>
+    <type name="\Magento\Catalog\Controller\Category\View">
+        <plugin name="topsort_category_view_controller_plugin" type="Topsort\Integration\Plugin\Controller\Category\View" />
+    </type>
+    <type name="\Magento\Catalog\Model\Design">
+        <plugin name="topsort_category_design_plugin" type="Topsort\Integration\Plugin\Category\Design"/>
+    </type>
 </config>

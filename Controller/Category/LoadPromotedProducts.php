@@ -57,10 +57,14 @@ class LoadPromotedProducts extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         $categoryId = $this->getRequest()->getParam('id');
+        $html = 'productHTML 11111111111111';
 
+        if ($this->getRequest()->getParam('html_output', false)) {
+            echo $html;exit;
+        }
         /** @var \Magento\Framework\Controller\Result\Json $result */
         $result = $this->resultFactory->create(ResultFactory::TYPE_JSON);
-        $responseData = ['html' => 'productHTML 11111111111111'];
+        $responseData = ['html' => $html];
         $result->setData($responseData);
         return $result;
 
