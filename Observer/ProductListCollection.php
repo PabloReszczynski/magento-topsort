@@ -89,7 +89,6 @@ class ProductListCollection implements ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        return;
         /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $collection */
         $collection = $observer->getData('collection');
         $initialItems = $collection->getItems();
@@ -99,9 +98,16 @@ class ProductListCollection implements ObserverInterface
             $action = $this->actionContext->getRequest()->getFullActionName();
             $promotedProductsCount = 0;
             $productsLimit = 0;
+            $onlyPromotedProducts = false;
 
             $h = $this->helperData;
             if ($action == 'catalog_category_view' && $h->getIsEnabledOnCatalogPages()) {
+                if (!$this->actionContext->getRequest()->getParam('load-promotions', false)) {
+                    // only add products during the ajax request
+                    // TODO this way we also disable tracking of impressions
+                    return;
+                }
+                $onlyPromotedProducts = true;
                 $promotedProductsCount = $h->getPromotedProductsAmountForCatalogPages();
                 $productsLimit = $h->getMinProductsAmountForCatalogPages();
             } else if ($action == 'catalogsearch_result_index' && $h->getIsEnabledOnSearch()) {
@@ -146,8 +152,10 @@ class ProductListCollection implements ObserverInterface
                 $sponsoredItemsList[] = $product;
             }
 
+//            var_export(count($sponsoredItemSkuList));
+//            exit;
             //$count = 0;
-            if ($sponsoredItemSkuList) {
+            if ($sponsoredItemSkuList || $onlyPromotedProducts) {
                 // insert items at the beginning of the collection
                 $items = $collection->getItems();
                 foreach ($collection as $key => $item) {
@@ -166,12 +174,13 @@ class ProductListCollection implements ObserverInterface
                 }
 
                 // re-add $items
-                foreach ($items as $item) {
-                    //$count++;
-                    $collection->addItem($item);
+                if (!$onlyPromotedProducts) {
+                    foreach ($items as $item) {
+                        //$count++;
+                        $collection->addItem($item);
+                    }
                 }
             }
-
             // track impressions
             $impressions = [];
             foreach ($collection as $item) {

@@ -38,8 +38,9 @@ class PromotedProductsLoader extends \Magento\Framework\View\Element\Template
     function getLoadPromotionsUrl()
     {
         return $this->getUrl('*/*/*', [
-            'id' => $this->getCategoryId(),
-            'load-promotions' => 1
+            '_current' => true,
+            '_use_rewrite' => true,
+            '_query' => ['load-promotions' => 1]
         ]);
 //        return $this->getUrl('topsort/category/loadPromotedProducts', [
 //            'id' => $this->getCategoryId()

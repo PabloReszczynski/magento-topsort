@@ -25,6 +25,7 @@ define([
 
         function renderPromotedProducts(responseData) {
             productsContainerEl.prepend(responseData.html);
+            productsContainerEl.trigger('contentUpdated');
         }
 
         $.ajax({
@@ -41,7 +42,9 @@ define([
             } else {
                 renderPromotedProducts(data);
             }
-            loaderEl.trigger('processStop');
+            setTimeout(function() {
+                loaderEl.trigger('processStop');
+            }, 500);
             finished = true;
         }).fail(function (jqXHR, textStatus) {
             if (window.console) {

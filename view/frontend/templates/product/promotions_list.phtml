@@ -152,4 +152,13 @@ $_helper = $block->getData('outputHelper');
                 ) : '' ?>
             </li>
             <?php endforeach; ?>
+<script type="text/x-magento-init">
+{
+    "[data-role=tocart-form], .form.map.checkout": {
+        "catalogAddToCart": {
+            "product_sku": "<?= $escaper->escapeJs($_product->getSku()) ?>"
+        }
+    }
+}
+</script>
 <?php endif; ?>

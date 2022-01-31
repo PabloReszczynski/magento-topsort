@@ -10,7 +10,7 @@
         <referenceContainer name="content">
             <!-- TODO remove this in order to activate usage of fp cache -->
             <block class="Topsort\Integration\Block\PromotedProductsLoader" name="topsort.promoted-products-loader"
-                   template="Topsort_Integration::topsort/promoted_products_loader.phtml" cacheable="false" ttl="0" />
+                   template="Topsort_Integration::topsort/promoted_products_loader.phtml"/>
         </referenceContainer>
     </body>
 </page>
