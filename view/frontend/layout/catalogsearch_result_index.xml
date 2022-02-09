@@ -7,7 +7,8 @@
     </head>
     <body>
         <referenceContainer name="content">
-            <block class="Magento\Framework\View\Element\Text" name="category.products.list.non-cacheable" cacheable="false" ttl="0" />
+            <block class="Topsort\Integration\Block\PromotedProductsLoader" name="topsort.promoted-products-loader"
+                   template="Topsort_Integration::topsort/promoted_products_loader.phtml"/>
         </referenceContainer>
     </body>
 </page>

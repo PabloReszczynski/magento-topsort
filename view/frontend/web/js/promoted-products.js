@@ -16,42 +16,64 @@ define([
         loaderEl.trigger('processStart');
         let finished = false;
 
-        // give 5 seconds to load the promotions, else - remove the loading mask
-        setTimeout(function() {
-            if (!finished) {
-                loaderEl.trigger('processStop');
-            }
-        }, 5000);
+        // let other widgets initialize first
+        setTimeout(function () {
 
-        function renderPromotedProducts(responseData) {
-            productsContainerEl.prepend(responseData.html);
-            productsContainerEl.trigger('contentUpdated');
-        }
-
-        $.ajax({
-            url: config.loadPromotionsUrl,
-            type: 'GET',
-            async: true,
-            data: {},
-            dataType: 'json',
-        }).done(function (data) {
-            if (data.error) {
-                if (window.console && window.console.error) {
-                    console.error(data.error);
+            // check current page number before loading starts
+            try {
+                if (config.hasOwnProperty('toolbarSelector')) {
+                    let toolbar = jQuery(config.toolbarSelector);
+                    if (toolbar) {
+                        let page = toolbar.productListToolbarForm("getCurrentPage");
+                        if (page > 1) {
+                            // do nothing
+                            loaderEl.trigger('processStop');
+                            finished = true;
+                            return ;
+                        }
+                    }
                 }
-            } else {
-                renderPromotedProducts(data);
+            } catch (e) {
+                console.error(e);
             }
+
+            // give 5 seconds to load the promotions, else - remove the loading mask
             setTimeout(function() {
-                loaderEl.trigger('processStop');
-            }, 500);
-            finished = true;
-        }).fail(function (jqXHR, textStatus) {
-            if (window.console) {
-                console.log(textStatus);
+                if (!finished) {
+                    loaderEl.trigger('processStop');
+                }
+            }, 5000);
+
+            function renderPromotedProducts(responseData) {
+                productsContainerEl.prepend(responseData.html);
+                productsContainerEl.trigger('contentUpdated');
             }
-            loaderEl.trigger('processStop');
-            finished = true;
-        });
+
+            $.ajax({
+                url: config.loadPromotionsUrl,
+                type: 'GET',
+                async: true,
+                data: {},
+                dataType: 'json',
+            }).done(function (data) {
+                if (data.error) {
+                    if (window.console && window.console.error) {
+                        console.error(data.error);
+                    }
+                } else {
+                    renderPromotedProducts(data);
+                }
+                setTimeout(function() {
+                    loaderEl.trigger('processStop');
+                }, 500);
+                finished = true;
+            }).fail(function (jqXHR, textStatus) {
+                if (window.console) {
+                    console.log(textStatus);
+                }
+                loaderEl.trigger('processStop');
+                finished = true;
+            });
+        }, 1);
     };
 });

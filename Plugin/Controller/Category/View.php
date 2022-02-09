@@ -44,6 +44,7 @@ class View
             //echo $block->toHtml();exit;
             $result->setData(['html' => $block->toHtml()]);
             // disable browser cache
+            // Note: consider using $this->getResponse()->setNoCacheHeaders();
             $result->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0', true);
 
             // disable FPC

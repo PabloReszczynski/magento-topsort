@@ -14,22 +14,6 @@ use Magento\Framework\View\Element\Template;
  */
 class PromotedProductsLoader extends \Magento\Framework\View\Element\Template
 {
-    /**
-     * Core registry
-     *
-     * @var \Magento\Framework\Registry
-     */
-    protected $_coreRegistry = null;
-
-    function __construct(
-        \Magento\Framework\Registry $registry,
-        Template\Context $context,
-        array $data = [])
-    {
-        $this->_coreRegistry = $registry;
-        parent::__construct($context, $data);
-    }
-
     function getLoaderIconUrl()
     {
         return $this->getViewFileUrl('images/loader-2.gif');
@@ -42,26 +26,21 @@ class PromotedProductsLoader extends \Magento\Framework\View\Element\Template
             '_use_rewrite' => true,
             '_query' => ['load-promotions' => 1]
         ]);
-//        return $this->getUrl('topsort/category/loadPromotedProducts', [
-//            'id' => $this->getCategoryId()
-//        ]);
     }
 
-    private function getCategoryId()
+    public function getToolbarSelector()
     {
-        return $this->getCurrentCategory()->getId();
+        return 'div.toolbar-products';
     }
 
-    /**
-     * Retrieve current category model object
-     *
-     * @return \Magento\Catalog\Model\Category
-     */
-    public function getCurrentCategory()
+    public function getProductsContainerSelector()
     {
-        if (!$this->hasData('current_category')) {
-            $this->setData('current_category', $this->_coreRegistry->registry('current_category'));
-        }
-        return $this->getData('current_category');
+        return 'ol.products';
     }
+
+    public function getLoaderMaskContainerSelector()
+    {
+        return 'div.products';
+    }
+
 }

@@ -2,13 +2,13 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       layout="2columns-left"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
-    <head>
-        <css src="Topsort_Integration::css/topsort.css"/>
-    </head>
     <body>
         <referenceContainer name="content">
-            <block class="Topsort\Integration\Block\PromotedProductsLoader" name="topsort.promoted-products-loader"
-                   template="Topsort_Integration::topsort/promoted_products_loader.phtml"/>
+            <referenceBlock name="search_result_list">
+                <action method='setTemplate'>
+                    <argument name='template' xsi:type='string'>Topsort_Integration::product/promotions_list.phtml</argument>
+                </action>
+            </referenceBlock>
         </referenceContainer>
     </body>
 </page>

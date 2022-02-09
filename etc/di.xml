@@ -14,7 +14,16 @@
     <type name="\Magento\Catalog\Controller\Category\View">
         <plugin name="topsort_category_view_controller_plugin" type="Topsort\Integration\Plugin\Controller\Category\View" />
     </type>
+    <type name="\Magento\CatalogSearch\Controller\Result\Index">
+        <plugin name="topsort_category_search_result_controller_plugin" type="Topsort\Integration\Plugin\Controller\Result\Index" />
+    </type>
     <type name="\Magento\Catalog\Model\Design">
         <plugin name="topsort_category_design_plugin" type="Topsort\Integration\Plugin\Category\Design"/>
+    </type>
+    <!--<type name="\Magento\Catalog\Block\Product\ListProduct">
+        <plugin name="topsort_products_list_plugin" type="Topsort\Integration\Plugin\Block\Product\ListProduct"/>
+    </type>-->
+    <type name="\Magento\Catalog\Model\ResourceModel\Product\Collection">
+        <plugin name="topsort_products_collection_plugin" type="Topsort\Integration\Plugin\ResourceModel\Product\Collection"/>
     </type>
 </config>

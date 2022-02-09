@@ -1,16 +1,15 @@
 <?php
 /** @var \Topsort\Integration\Block\PromotedProductsLoader $block */
 ?>
-<!--<div style="display: none" id="topsort-promoted-products-loader" data-mage-init='{"Topsort_Integration/js/promoted-products": { "loaderIcon": "{store URL}/static/{static version}/frontend/Magento/luma/en_US/images/loader-2.gif"}}'>
-</div>-->
 <script type="text/x-magento-init">
     {
         "*": {
             "Topsort_Integration/js/promoted-products": {
                 "loaderIcon": "<?= $block->getLoaderIconUrl() ?>",
                 "loadPromotionsUrl": "<?= $block->getLoadPromotionsUrl() ?>",
-                "loaderMaskContainer": "div.products",
-                "productsContainer": "ol.products"
+                "loaderMaskContainer": "<?= $block->getLoaderMaskContainerSelector() ?>",
+                "productsContainer": "<?= $block->getProductsContainerSelector() ?>",
+                "toolbarSelector": "<?= $block->getToolbarSelector() ?>"
             }
         }
     }
