@@ -162,7 +162,7 @@ class ProductCollectionHelper
                 $sponsoredItemsList[] = $product;
             }
 
-            if ($sponsoredItemSkuList || $onlyPromotedProducts) {
+            if (count($sponsoredItemSkuList) > 0 || $onlyPromotedProducts) {
                 // insert items at the beginning of the collection
                 $items = $collection->getItems();
                 foreach ($collection as $key => $item) {

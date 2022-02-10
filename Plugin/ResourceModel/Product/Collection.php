@@ -26,6 +26,9 @@ class Collection
 
     function beforeLoad(\Magento\Catalog\Model\ResourceModel\Product\Collection $collection, $printQuery = false, $logQuery = false)
     {
+        if ($collection->isLoaded()) {
+            return null;
+        }
         if ($collection->hasFlag('topsort_promotions_load_mode')
         && !$collection->getFlag('promotions_initialization')) {
             // avoid recursion
