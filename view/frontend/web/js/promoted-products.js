@@ -9,8 +9,13 @@ define([
         let loaderEl = $(config.hasOwnProperty('loaderMaskContainer') ? config.loaderMaskContainer : element);
         let productsContainerEl = $(config.hasOwnProperty('productsContainer') ? config.productsContainer : element);
 
+        if (productsContainerEl.length === 0) {
+            // there is no products section on this page, do nothing
+            return;
+        }
+
         loaderEl.loader({
-            icon: config.loaderIcon// 'http://php73.local.com/test/m2.3.5/pbi-sc-beta-dev/pub/static/version1635426714/frontend/Magento/luma/en_US/images/loader-2.gif'//jQuery('body').data().mageLoader.options.icon
+            icon: config.loaderIcon
         });
 
         loaderEl.trigger('processStart');
@@ -22,8 +27,8 @@ define([
             // check current page number before loading starts
             try {
                 if (config.hasOwnProperty('toolbarSelector')) {
-                    let toolbar = jQuery(config.toolbarSelector);
-                    if (toolbar) {
+                    let toolbar = $(config.toolbarSelector);
+                    if (toolbar.length !== 0) {
                         let page = toolbar.productListToolbarForm("getCurrentPage");
                         if (page > 1) {
                             // remove the loading state from the pag and continue sending the ajax request in order
