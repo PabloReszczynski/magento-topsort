@@ -99,18 +99,32 @@ class ProductCollectionHelper
         $productsLimit = $collection->getFlag('topsort_products_limit');
         $onlyPromotedProducts = $collectionLoadMode === 'load_only_topsort_promotions';
 
+        $action = $this->actionContext->getRequest()->getFullActionName();
+
         $initialItems = $collection->getItems();
+        // track impressions
+        $impressions = [];
+        foreach ($initialItems as $item) {
+            /** @var Product $item */
+            $impressions[$item->getSku()] = [
+                'product_id' => $item->getId(),
+                'sku' => $item->getSku()
+            ];
+        }
+
         try {
             $curPage = $collection->getCurPage();
             $pageSize = $collection->getPageSize();
             if ($curPage && $curPage > 1) {
-                // display results only for on the first page if paging is used
+                // display results only on the first page if paging is used
+
+                // clean up collection if only promoted products should be in the collection
                 if ($onlyPromotedProducts) {
-                    $items = $collection->getItems();
                     foreach ($collection as $key => $item) {
                         $collection->removeItemByKey($key);
                     }
                 }
+                $this->topsortApi->trackImpressions($action, $impressions);
                 return;
             }
 
@@ -119,9 +133,16 @@ class ProductCollectionHelper
             if ($productsLimit > 0 && $pageSize > $productsLimit && $productsCount < $productsLimit) {
                 // productsLimit should be less then the page size
                 // if productsLimit is not reached - no sponsored products should be shown
+
+                // clean up collection if only promoted products should be in the collection
+                if ($onlyPromotedProducts) {
+                    foreach ($collection as $key => $item) {
+                        $collection->removeItemByKey($key);
+                    }
+                }
+                $this->topsortApi->trackImpressions($action, $impressions);
                 return;
             }
-
             $allSku = $this->collectionHelper->getAllSku($collection);
             // $allSku = ['4RfbhmIx']; // demo SKUs to test
 
@@ -149,12 +170,20 @@ class ProductCollectionHelper
                 }
                 // add new items
                 foreach ($sponsoredItemsList as $item) {
+                    /** @var Product $item */
                     $id = $item->getId();
                     $item->setIsPromoted(true);
                     $item->setAuctionId($auctionId);
                     $item->setId($id . '-promoted');
                     $collection->addItem($item);
                     $item->setId($id);
+
+                    // add impressions to track
+                    $impressions[$item->getSku()] = [
+                        'product_id' => $id,
+                        'sku' => $item->getSku(),
+                        'auctionId' => $auctionId
+                    ];
                 }
 
                 // re-add $items
@@ -168,21 +197,9 @@ class ProductCollectionHelper
                     }
                 }
             }
-            // track impressions
-            $impressions = [];
-            foreach ($collection as $item) {
-                /** @var Product $item */
-                $impression = [
-                    'product_id' => $item->getId(),
-                    'sku' => $item->getSku()
-                ];
-                if ($item->getIsPromoted() === true) {
-                    $impression['auctionId'] = $item->getAuctionId();
-                }
-                $impressions[] = $impression;
-            }
 
-            //$this->topsortApi->trackImpressions($action, $impressions);
+            $this->topsortApi->trackImpressions($action, $impressions);
+
         } catch (\Exception $e) {
             // something did not work, we write the exception to the log and return the collection to its initial state
             $this->logger->critical($e);

@@ -32,7 +32,6 @@ class Collection
             $collection->setFlag('promotions_initialization', true);
 
             $this->collectionHelper->setupPromotedProductsInCollection($collection);
-
             // allow to reload multiple times (and re-initialize promotions)
             $collection->setFlag('promotions_initialization', false);
         }

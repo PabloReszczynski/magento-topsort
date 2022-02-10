@@ -26,10 +26,11 @@ define([
                     if (toolbar) {
                         let page = toolbar.productListToolbarForm("getCurrentPage");
                         if (page > 1) {
-                            // do nothing
+                            // remove the loading state from the pag and continue sending the ajax request in order
+                            // to track impressions
                             loaderEl.trigger('processStop');
-                            finished = true;
-                            return ;
+                            // finished = true;
+                            // return ;
                         }
                     }
                 }

@@ -128,12 +128,13 @@ class Api
                 'impressions' => $apiImpressions
             ];
             $result = $this->getProvider()->report_impressions($data)->wait();
-            $this->logger->info('TOPSORT: Impressions tracking. ' . count($result['impressions']) . ' impressions were sent to Topsort.');
+
+            $this->logger->info('TOPSORT: Impressions tracking. ' . count($data['impressions']) . ' impressions were sent to Topsort.');
             $this->logger->debug("TOPSORT: Impressions tracking.\nRequest: " . $this->jsonHelper->jsonEncode($data) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
+
             return $result;
         } catch (\Topsort\TopsortException $e) {
             $prevException = $e->getPrevious();
-
             if ($prevException && $prevException instanceof \GuzzleHttp\Exception\ClientException) {
                 $this->logger->critical($prevException);
                 if (isset($data)) {
@@ -144,7 +145,10 @@ class Api
             $this->logger->critical($e->getPrevious());
             return [];
         } catch (\Exception $e) {
-            $this->logger->critical($e->getPrevious());
+            $this->logger->critical($e);
+            if ($e->getPrevious()) {
+                $this->logger->critical($e->getPrevious());
+            }
             return [];
         }
     }

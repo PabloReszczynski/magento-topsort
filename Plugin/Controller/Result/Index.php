@@ -10,7 +10,10 @@ declare(strict_types=1);
 
 namespace Topsort\Integration\Plugin\Controller\Result;
 
+use Magento\Catalog\Model\Layer\Resolver;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Search\Model\QueryFactory;
+use Magento\Store\Model\StoreManagerInterface;
 
 class Index
 {
@@ -26,21 +29,51 @@ class Index
      * @var \Topsort\Integration\Controller\Search\Result\Index
      */
     private $customAction;
+    /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
+    /**
+     * @var QueryFactory
+     */
+    private $queryFactory;
+    /**
+     * @var Resolver
+     */
+    private $layerResolver;
 
     function __construct(
         ResultFactory $resultFactory,
         \Magento\Framework\App\Cache\StateInterface $cacheState,
-        \Topsort\Integration\Controller\Search\Result\Index $customAction
+        \Topsort\Integration\Controller\Search\Result\Index $customAction,
+        StoreManagerInterface $storeManager,
+        QueryFactory $queryFactory,
+        Resolver $layerResolver
     )
     {
         $this->resultFactory = $resultFactory;
         $this->cacheState = $cacheState;
         $this->customAction = $customAction;
+        $this->storeManager = $storeManager;
+        $this->queryFactory = $queryFactory;
+        $this->layerResolver = $layerResolver;
     }
 
     function aroundExecute(\Magento\CatalogSearch\Controller\Result\Index $actionModel, callable $proceed)
     {
         if ($actionModel->getRequest()->getParam('load-promotions')) {
+
+            // initialize query
+            $this->layerResolver->create(Resolver::CATALOG_LAYER_SEARCH);
+
+//            /* @var $query \Magento\Search\Model\Query */
+//            $query = $this->queryFactory->get();
+//
+//            $storeId = $this->storeManager->getStore()->getId();
+//            $query->setStoreId($storeId);
+//
+//            $queryText = $query->getQueryText();
+
             $view = $this->customAction->executeLoadPromotionsAction($actionModel, 'catalogsearch_result_index_topsort_promotions');
 
             $block = $view->getLayout()->getBlock('search_result_list');
