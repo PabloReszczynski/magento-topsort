@@ -14,6 +14,7 @@ use Magento\Catalog\Model\Layer\Resolver;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Search\Model\QueryFactory;
 use Magento\Store\Model\StoreManagerInterface;
+use Topsort\Integration\Helper\HtmlHelper;
 
 class Index
 {
@@ -41,6 +42,10 @@ class Index
      * @var Resolver
      */
     private $layerResolver;
+    /**
+     * @var HtmlHelper
+     */
+    private $htmlHelper;
 
     function __construct(
         ResultFactory $resultFactory,
@@ -48,7 +53,8 @@ class Index
         \Topsort\Integration\Controller\Search\Result\Index $customAction,
         StoreManagerInterface $storeManager,
         QueryFactory $queryFactory,
-        Resolver $layerResolver
+        Resolver $layerResolver,
+        HtmlHelper $htmlHelper
     )
     {
         $this->resultFactory = $resultFactory;
@@ -57,6 +63,7 @@ class Index
         $this->storeManager = $storeManager;
         $this->queryFactory = $queryFactory;
         $this->layerResolver = $layerResolver;
+        $this->htmlHelper = $htmlHelper;
     }
 
     function aroundExecute(\Magento\CatalogSearch\Controller\Result\Index $actionModel, callable $proceed)
@@ -66,15 +73,7 @@ class Index
             // initialize query
             $this->layerResolver->create(Resolver::CATALOG_LAYER_SEARCH);
 
-//            /* @var $query \Magento\Search\Model\Query */
-//            $query = $this->queryFactory->get();
-//
-//            $storeId = $this->storeManager->getStore()->getId();
-//            $query->setStoreId($storeId);
-//
-//            $queryText = $query->getQueryText();
-
-            $view = $this->customAction->executeLoadPromotionsAction($actionModel, 'catalogsearch_result_index_topsort_promotions');
+            $view = $this->customAction->executeLoadPromotionsAction($actionModel/*, 'catalogsearch_result_index_topsort_promotions'*/);
 
             $block = $view->getLayout()->getBlock('search_result_list');
 
@@ -82,19 +81,9 @@ class Index
             $result = $this->resultFactory->create(ResultFactory::TYPE_JSON);
 
             $html = $block->toHtml();
-//            $html = '<div>' . $html . '</div>';
-//            $doc = new \DomDocument();
-//            @$doc->loadHTML($html);
-//            $finder = new \DOMXPath($doc);
-//            $productItemNodes = $finder->query("//li");
-//            //var_export($productItemNodes->count());exit;
-//            $productsHtml = '';
-//            foreach ($productItemNodes as $productItemNode) {
-//                /** @var \DOMNode $productItemNode */
-//                $productsHtml .= $productItemNode->ownerDocument->saveHTML($productItemNode);
-//            }
-//echo $productsHtml;exit;
-            $productsHtml = $html;
+
+            $productsHtml = $this->htmlHelper->extractHtmlForTag($html, "//li[contains(@class, 'product-item')]");
+
             $result->setData(['html' => $productsHtml]);
             // disable browser cache
             // Note: consider using $this->getResponse()->setNoCacheHeaders();

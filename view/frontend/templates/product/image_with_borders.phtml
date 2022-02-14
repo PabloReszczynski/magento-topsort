@@ -27,7 +27,7 @@ $trackingUrl = $block->getUrl('topsort/product/tracking', [
             });
         }
 
-        // TODO change the logic of the subscription to the events. Use magento-init way, so that this will be picked up after ajax content update
+        // subscription to the events. might also be implemented using magento-init way
         $(document).ready(function() {
             <?php if ($block->getIsPromoted()) : ?>
                 let promotedLabel = document.createElement( "div" );

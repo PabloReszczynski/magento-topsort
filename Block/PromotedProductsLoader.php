@@ -1,6 +1,5 @@
 <?php
 namespace Topsort\Integration\Block;
-use Magento\Framework\View\Element\Template;
 
 /**
  * Topsort Magento Extension

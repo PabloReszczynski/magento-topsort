@@ -34,8 +34,6 @@ define([
                             // remove the loading state from the pag and continue sending the ajax request in order
                             // to track impressions
                             loaderEl.trigger('processStop');
-                            // finished = true;
-                            // return ;
                         }
                     }
                 }
@@ -53,6 +51,7 @@ define([
             function renderPromotedProducts(responseData) {
                 productsContainerEl.prepend(responseData.html);
                 productsContainerEl.trigger('contentUpdated');
+                $('[data-role=tocart-form], .form.map.checkout').catalogAddToCart()
             }
 
             $.ajax({

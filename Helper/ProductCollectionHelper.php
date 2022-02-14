@@ -9,7 +9,6 @@
 namespace Topsort\Integration\Helper;
 
 use Magento\Catalog\Model\Product;
-use Magento\Framework\Event\ObserverInterface;
 use Topsort\Integration\Model\Api;
 use Topsort\Integration\Model\Product\CollectionHelper;
 use Magento\UrlRewrite\Model\UrlFinderInterface;
@@ -33,54 +32,24 @@ class ProductCollectionHelper
      */
     private $actionContext;
     /**
-     * @var \Topsort\Integration\Helper\Data
-     */
-    private $helperData;
-    /**
      * @var \Psr\Log\LoggerInterface
      */
     private $logger;
-    /**
-     * @var UrlFinderInterface
-     */
-    private $urlFinder;
-    /**
-     * @var \Magento\Framework\App\Response\RedirectInterface
-     */
-    private $redirect;
-    /**
-     * @var \Magento\Framework\UrlInterface
-     */
-    private $url;
-    /**
-     * @var \Magento\Framework\App\Request\PathInfo
-     */
-    private $pathInfoService;
+
 
     function __construct(
         CollectionHelper $collectionHelper,
         \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
         Api $topsortApi,
         \Magento\Framework\App\Action\Context $actionContext,
-        \Topsort\Integration\Helper\Data $helperData,
-        \Psr\Log\LoggerInterface $logger,
-        UrlFinderInterface $urlFinder,
-        \Magento\Framework\App\Response\RedirectInterface $redirect,
-        \Magento\Framework\UrlInterface $url,
-        \Magento\Framework\App\Request\PathInfo $pathInfoService
+        \Psr\Log\LoggerInterface $logger
     )
     {
-
         $this->collectionHelper = $collectionHelper;
         $this->topsortApi = $topsortApi;
         $this->productRepository = $productRepository;
         $this->actionContext = $actionContext;
-        $this->helperData = $helperData;
         $this->logger = $logger;
-        $this->urlFinder = $urlFinder;
-        $this->redirect = $redirect;
-        $this->url = $url;
-        $this->pathInfoService = $pathInfoService;
     }
 
     /**

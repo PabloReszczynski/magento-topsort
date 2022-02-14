@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace Topsort\Integration\Plugin\Controller\Category;
 
 use Magento\Framework\Controller\ResultFactory;
+use Topsort\Integration\Helper\HtmlHelper;
 
 class View
 {
@@ -22,14 +23,20 @@ class View
      * @var \Magento\Framework\App\Cache\StateInterface
      */
     private $cacheState;
+    /**
+     * @var HtmlHelper
+     */
+    private $htmlHelper;
 
     function __construct(
         ResultFactory $resultFactory,
-        \Magento\Framework\App\Cache\StateInterface $cacheState
+        \Magento\Framework\App\Cache\StateInterface $cacheState,
+        HtmlHelper $htmlHelper
     )
     {
         $this->resultFactory = $resultFactory;
         $this->cacheState = $cacheState;
+        $this->htmlHelper = $htmlHelper;
     }
 
     function aroundExecute(\Magento\Catalog\Controller\Category\View $actionModel, callable $proceed)
@@ -41,8 +48,8 @@ class View
 
             /** @var \Magento\Framework\Controller\Result\Json $result */
             $result = $this->resultFactory->create(ResultFactory::TYPE_JSON);
-            //echo $block->toHtml();exit;
-            $result->setData(['html' => $block->toHtml()]);
+
+            $result->setData(['html' => $this->htmlHelper->extractHtmlForTag($block->toHtml(), "//li[contains(@class, 'product-item')]")]);
             // disable browser cache
             // Note: consider using $this->getResponse()->setNoCacheHeaders();
             $result->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0', true);
