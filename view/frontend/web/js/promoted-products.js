@@ -29,7 +29,17 @@ define([
                 if (config.hasOwnProperty('toolbarSelector')) {
                     let toolbar = $(config.toolbarSelector);
                     if (toolbar.length !== 0) {
-                        let page = toolbar.productListToolbarForm("getCurrentPage");
+                        // there is no getCurrentPage method in Magento 2.3.5
+                        let page;
+                        try {
+                            page = toolbar.productListToolbarForm("getCurrentPage");
+                        } catch (e) {
+                            if (window.hasOwnProperty('console')) {
+                                console.log(e);
+                                console.log('Method getCurrentPage is not available in some versions of Magento. This is not essential and this notice might be ignored.');
+                            }
+                            page = 1; // assume that we are on the first page
+                        }
                         if (page > 1) {
                             // remove the loading state from the pag and continue sending the ajax request in order
                             // to track impressions
@@ -38,7 +48,9 @@ define([
                     }
                 }
             } catch (e) {
-                console.error(e);
+                if (window.hasOwnProperty('console')) {
+                    console.error(e);
+                }
             }
 
             // give 5 seconds to load the promotions, else - remove the loading mask
