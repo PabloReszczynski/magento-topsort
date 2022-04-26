@@ -42,6 +42,67 @@ class Api
         $this->jsonHelper = $jsonHelper;
     }
 
+    function getBanners($placement, $productSkuValues = [])
+    {
+        if (!$this->helper->getIsEnabled()) {
+            return [];
+        }
+        $sdk = $this->getProvider();
+
+        $products = [];
+        foreach ($productSkuValues as $productId) {
+            $products[] = ['productId' => $productId];
+        }
+
+        try {
+            $result = $sdk->create_auction(
+                [
+                    "listings" => 1,
+                    "bannerAds" => 1
+                ],
+                $products,
+                $this->getSessionData(),
+                [
+                    "placement" => $placement
+                ]
+            )->wait();
+
+            $this->logger->debug("TOPSORT: Banner Auction.\nRequest products count: " . count($products) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
+
+        } catch (\Topsort\TopsortException $e) {
+            $prevException = $e->getPrevious();
+            if ($prevException && $prevException instanceof \GuzzleHttp\Exception\ClientException) {
+                $this->logger->critical($prevException);
+                $this->logger->critical('TOPSORT_RESPONSE:' . (string)$prevException->getResponse()->getBody());
+            }
+            $this->logger->critical($e->getPrevious());
+            return [];
+        } catch (\Exception $e) {
+            $this->logger->critical($e->getPrevious());
+            return [];
+        }
+        $winnersList = [];
+        $auctionId = null;
+        if (isset($result['slots']['bannerAds']['winners'], $result['slots']['bannerAds']['auctionId'])) {
+            foreach ($result['slots']['bannerAds']['winners'] as $winner) {
+                if (isset($winner['rank']) && isset($winner['productId'])) {
+                    $winnersList[$winner['rank']] = [
+                        'sku' => $winner['productId'] ?? $winner['winnerId'] ?? '',
+                        'url' => $winner['assetUrl'] ?? '#',
+                        'winnerType' => $winner['winnerType'] ?? '',
+                        'winnerId' => $winner['winnerId'] ?? '',
+                        // $winner['resolvedBidId'] not used
+                    ];
+                }
+            }
+            $auctionId = $result['slots']['bannerAds']['auctionId'];
+        }
+
+        return [
+            'banners' => $winnersList,
+            'auction_id' => $auctionId
+        ];
+    }
 
     function getSponsoredProducts($productSkuValues, $promotedProductsCount)
     {

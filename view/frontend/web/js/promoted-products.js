@@ -85,7 +85,7 @@ define([
                 }, 500);
                 finished = true;
             }).fail(function (jqXHR, textStatus) {
-                if (window.console) {
+                if (window.hasOwnProperty('console') && window.console.hasOwnProperty('log')) {
                     console.log(textStatus);
                 }
                 loaderEl.trigger('processStop');
