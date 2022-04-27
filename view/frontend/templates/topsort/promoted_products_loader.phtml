@@ -1,9 +1,10 @@
 <?php
 /** @var \Topsort\Integration\Block\PromotedProductsLoader $block */
 ?>
+<div id="promoted-products-component" style="display: none"></div>
 <script type="text/x-magento-init">
     {
-        "*": {
+        "#promoted-products-component": {
             "Topsort_Integration/js/promoted-products": {
                 "loaderIcon": "<?= $block->getLoaderIconUrl() ?>",
                 "loadPromotionsUrl": "<?= $block->getLoadPromotionsUrl() ?>",

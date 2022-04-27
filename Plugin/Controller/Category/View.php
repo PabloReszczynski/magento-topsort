@@ -27,16 +27,22 @@ class View
      * @var HtmlHelper
      */
     private $htmlHelper;
+    /**
+     * @var \Topsort\Integration\Helper\BannerHelper
+     */
+    private $bannerHelper;
 
     function __construct(
         ResultFactory $resultFactory,
         \Magento\Framework\App\Cache\StateInterface $cacheState,
+        \Topsort\Integration\Helper\BannerHelper $bannerHelper,
         HtmlHelper $htmlHelper
     )
     {
         $this->resultFactory = $resultFactory;
         $this->cacheState = $cacheState;
         $this->htmlHelper = $htmlHelper;
+        $this->bannerHelper = $bannerHelper;
     }
 
     function aroundExecute(\Magento\Catalog\Controller\Category\View $actionModel, callable $proceed)
@@ -49,7 +55,16 @@ class View
             /** @var \Magento\Framework\Controller\Result\Json $result */
             $result = $this->resultFactory->create(ResultFactory::TYPE_JSON);
 
-            $result->setData(['html' => $this->htmlHelper->extractHtmlForTag($block->toHtml(), "//li[contains(@class, 'product-item')]")]);
+            $resultData = [
+                'html' => $this->htmlHelper->extractHtmlForTag($block->toHtml(), "//li[contains(@class, 'product-item')]")
+            ];
+            if ($actionModel->getRequest()->getParam('banners')) {
+                $ids = explode(',', $actionModel->getRequest()->getParam('banners'));
+                foreach ($ids as $id) {
+                    $resultData['bannerHtml'][$id] = $this->bannerHelper->getBannerHtml($id);
+                }
+            }
+            $result->setData($resultData);
             // disable browser cache
             // Note: consider using $this->getResponse()->setNoCacheHeaders();
             $result->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0', true);

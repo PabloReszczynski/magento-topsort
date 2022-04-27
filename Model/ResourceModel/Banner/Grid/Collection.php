@@ -8,7 +8,8 @@
  */
 namespace Topsort\Integration\Model\ResourceModel\Banner\Grid;
 
-use Magento\Framework\Search\AggregationInterface;
+use Magento\Framework\Data\Collection\EntityFactoryInterface;
+use Topsort\Integration\Model\Api;
 use Topsort\Integration\Model\ResourceModel\Banner\Grid\Collection\Item;
 
 /**
@@ -16,6 +17,19 @@ use Topsort\Integration\Model\ResourceModel\Banner\Grid\Collection\Item;
  */
 class Collection extends \Magento\Framework\Data\Collection
 {
+    /**
+     * @var Api
+     */
+    private $api;
+
+    function __construct(
+        EntityFactoryInterface $entityFactory,
+        Api $api)
+    {
+        $this->api = $api;
+        parent::__construct($entityFactory);
+    }
+
     /**
      * Load data
      *
@@ -27,10 +41,13 @@ class Collection extends \Magento\Framework\Data\Collection
     public function loadData($printQuery = false, $logQuery = false)
     {
         if (empty($this->_items)) {
-            $this->_items = [
-                new Item(['id' => base64_encode('Home-page|400x500'), 'width' => '400', 'height' => '500', 'placement' => 'Home-page']),
-                new Item(['id' => base64_encode('Category-page|600x200'), 'width' => '600', 'height' => '200', 'placement' => 'Category-page']),
-            ];
+            $bannerAds = $this->api->getBannerAdLocations();
+            $items = [];
+            foreach ($bannerAds as $bannerAd) {
+                $bannerAd['id'] = $this->getBannerIdForData($bannerAd['placement'], $bannerAd['width'], $bannerAd['height']);
+                $items[] = new Item($bannerAd);
+            }
+            $this->_items = $items;
         }
         return $this;
     }

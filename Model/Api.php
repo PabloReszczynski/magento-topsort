@@ -28,11 +28,18 @@ class Api
      * @var \Magento\Framework\Json\Helper\Data
      */
     private $jsonHelper;
+    /**
+     * @var \Magento\Framework\App\Action\Context
+     */
+    private $actionContext;
+
+    static private $bannerAdsData = null;
 
     function __construct(
         \Topsort\Integration\Helper\Data $helper,
         \Magento\Framework\Json\Helper\Data $jsonHelper,
         \Magento\Customer\Model\Session $customerSession,
+        \Magento\Framework\App\Action\Context $actionContext,
         \Psr\Log\LoggerInterface $logger
     )
     {
@@ -40,9 +47,15 @@ class Api
         $this->customerSession = $customerSession;
         $this->logger = $logger;
         $this->jsonHelper = $jsonHelper;
+        $this->actionContext = $actionContext;
     }
 
-    function getBanners($placement, $productSkuValues = [])
+    private function isBannerDataNeeded()
+    {
+        return $this->actionContext->getRequest()->getParam('banners') ? true : false;
+    }
+
+    function getSponsoredBanners($placement, $productSkuValues = [])
     {
         if (!$this->helper->getIsEnabled()) {
             return [];
@@ -55,17 +68,22 @@ class Api
         }
 
         try {
-            $result = $sdk->create_auction(
-                [
-                    "listings" => 1,
-                    "bannerAds" => 1
-                ],
-                $products,
-                $this->getSessionData(),
-                [
-                    "placement" => $placement
-                ]
-            )->wait();
+            if ($placement === 'Category-page' && self::$bannerAdsData !== null) {
+                // use cached result from promoted products request
+                $result = ['slots' => ['bannerAds' => self::$bannerAdsData]];
+            } else {
+                $result = $sdk->create_auction(
+                    [
+                        'listings' => 1,
+                        'bannerAds' => 1
+                    ],
+                    $products,
+                    $this->getSessionData(),
+                    [
+                        'placement' => $placement
+                    ]
+                )->wait();
+            }
 
             $this->logger->debug("TOPSORT: Banner Auction.\nRequest products count: " . count($products) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
 
@@ -117,14 +135,20 @@ class Api
         }
 
         try {
+            $bannerOptions = null;
+            $slots = [
+                'listings' => intval($promotedProductsCount),
+            ];
+            if ($this->isBannerDataNeeded()) {
+                $slots['bannerAds'] = 1;
+                $bannerOptions['placement'] = 'Category-page';
+            }
             $result = $sdk->create_auction(
-                [
-                    'listings' => intval($promotedProductsCount),
-                ],
+                $slots,
                 $products,
-                $this->getSessionData()
+                $this->getSessionData(),
+                $bannerOptions
             )->wait();
-
             $this->logger->debug("TOPSORT: Auction.\nRequest products count: " . count($products) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
 
         } catch (\Topsort\TopsortException $e) {
@@ -149,6 +173,11 @@ class Api
                 }
             }
             $auctionId = $result['slots']['listings']['auctionId'];
+        }
+
+        if (isset($result['slots']['bannerAds'])) {
+            // let bannerAds be reused later during the next getBanners() call
+            self::$bannerAdsData = $result['slots']['bannerAds'];
         }
         return [
             'products' => $winnersList,
@@ -313,6 +342,34 @@ class Api
         }
     }
 
+    public function getBannerAdLocations()
+    {
+        try {
+            $sdk = $this->getAdsApiProvider();
+            $result = $sdk->get_ad_locations()->wait();
+            $bannerAds = [];
+            foreach (($result['bannerAds'] ?? []) as $bannerAd) {
+                $bannerAds[] = [
+                    'width' => $bannerAd['dimensions']['width'] ?? 0,
+                    'height' => $bannerAd['dimensions']['height'] ?? 0,
+                    'placement' => $bannerAd['placement']['page'],
+                ];
+            }
+            return $bannerAds;
+        } catch (\Topsort\TopsortException $e) {
+            $prevException = $e->getPrevious();
+            if ($prevException && $prevException instanceof \GuzzleHttp\Exception\ClientException) {
+                $this->logger->critical($prevException);
+                $this->logger->critical('TOPSORT_RESPONSE:' . (string)$prevException->getResponse()->getBody());
+            }
+            $this->logger->critical($e->getPrevious());
+            return [];
+        } catch (\Exception $e) {
+            $this->logger->critical($e->getPrevious());
+            return [];
+        }
+    }
+
     /**
      * @return string
      */
@@ -329,6 +386,16 @@ class Api
         $apiKey = $this->helper->getApiKey();
         $apiUrl = $this->helper->getApiUrl();
         return new \Topsort\SDK('magento-marketplace', $apiKey, $apiUrl);
+    }
+
+    /**
+     * @return \Topsort\SDK
+     */
+    protected function getAdsApiProvider()
+    {
+        $apiKey = $this->helper->getApiKey();
+        $apiUrl = $this->helper->getApiUrl();
+        return new \Topsort\SDK('magento-marketplace', $apiKey, str_replace('.api.', '.app.', $apiUrl));
     }
 
     /**

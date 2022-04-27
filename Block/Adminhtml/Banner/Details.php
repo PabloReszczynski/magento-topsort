@@ -20,6 +20,10 @@ class Details extends \Magento\Backend\Block\Widget\Form\Container
         parent::_construct();
 
         $this->_headerText = __('Banner Details');
+
+        $this->removeButton('save');
+        $this->removeButton('delete');
+        $this->removeButton('reset');
     }
 
     function _prepareLayout()

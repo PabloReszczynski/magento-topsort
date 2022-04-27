@@ -46,7 +46,9 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
             'text',
             [
                 'name' => 'placement',
-                'label' => __('Placement')
+                'label' => __('Placement'),
+                'readonly'  => true,
+                'required'  => false
             ]
         );
 
@@ -55,18 +57,26 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
             'text',
             [
                 'name' => 'dimensions',
-                'label' => __('Dimensions')
+                'label' => __('Dimensions'),
+                'readonly'  => true,
+                'required'  => false
             ]
         );
+
+        $afterElementHtml = '<small>Copy the HTML code and use it on a CSM page or block in order to place the banner on pages in Magento.</small>';
 
         $fieldset->addField(
             'html_code',
             'textarea',
             [
                 'name' => 'html_code',
-                'rows' => 20,
+                'rows' => 30,
                 'label' => __('HTML Code'),
                 'title' => __('HTML Code'),
+                'onclick' => "this.select()",
+                'after_element_html' => $afterElementHtml,
+                'readonly'  => true,
+                'required'  => false
             ]
         );
 
@@ -92,6 +102,14 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
         $htmlId = $this->getValidHtmlId($bannerData['id']);
         return '<!-- Topsort Banner Code Start -->
 <div style="width: ' . intval($bannerData['width']) . 'px; height: ' . intval($bannerData['height']) . 'px" id="topsort-banner-' . $htmlId . '"></div>
+<script type="text/javascript">
+window.topsortBanners = window.topsortBanners || {};
+window.topsortBanners["Q2F0ZWdvcnktcGFnZXw2MDB4MjAw"] = {
+    "bannerId": "' . $bannerData['id'] . '",
+    "elId": "topsort-banner-' . $htmlId . '",
+    "placement": "' . $bannerData['placement'] . '"
+};
+</script>
 <script type="text/x-magento-init">
 {
     "#topsort-banner-' . $htmlId . '": {
@@ -104,7 +122,8 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
     }
 }
 </script>
-<!-- Topsort Banner Code End -->';
+<!-- Topsort Banner Code End -->
+';
     }
 
     private function getValidHtmlId($string) {

@@ -13,28 +13,16 @@ use Magento\Framework\Controller\ResultFactory;
 class Content extends \Magento\Framework\App\Action\Action
 {
     /**
-     * @var \Topsort\Integration\Model\ResourceModel\Banner\Grid\Collection
+     * @var \Topsort\Integration\Helper\BannerHelper
      */
-    private $collection;
-    /**
-     * @var \Topsort\Integration\Model\Api
-     */
-    private $api;
-    /**
-     * @var \Magento\Catalog\Model\ProductRepository
-     */
-    private $productRepository;
+    private $bannerHelper;
 
     function __construct(
-        \Topsort\Integration\Model\ResourceModel\Banner\Grid\Collection $collection,
-        \Topsort\Integration\Model\Api $api,
-        \Magento\Catalog\Model\ProductRepository $productRepository,
+        \Topsort\Integration\Helper\BannerHelper $bannerHelper,
         \Magento\Framework\App\Action\Context $context
     )
     {
-        $this->collection = $collection;
-        $this->api = $api;
-        $this->productRepository = $productRepository;
+        $this->bannerHelper = $bannerHelper;
         parent::__construct($context);
     }
 
@@ -46,43 +34,11 @@ class Content extends \Magento\Framework\App\Action\Action
         $request = $this->getRequest();
         $bannerId = $request->getParam('id');
 
-        $bannerData = $this->getBannerData($bannerId);
-        $resultData = [];
-        if ($bannerData !== false) {
-            $resultData['html'] = '<a href="'
-                . $bannerData['promoted_url'] . '"><img style="width: ' . intval($bannerData['width']) . 'px; height: ' . intval($bannerData['height']) . 'px" width="' . $bannerData['width']
-                . '" height="' . $bannerData['height'] . '" alt="" src="' . $bannerData['image_url'] . '"/></a>';
-        } else {
-            $resultData['html'] = ''; // TODO what to show if no banners returned?
-        }
+        $resultData['html'] = $this->bannerHelper->getBannerHtml($bannerId);
 
         /** @var \Magento\Framework\Controller\Result\Json $result */
         $result = $this->resultFactory->create(ResultFactory::TYPE_JSON);
         $result->setData($resultData);
         return $result;
-    }
-
-    private function getBannerData($bannerId)
-    {
-        $data = $this->collection->getBannerDataById($bannerId);
-        // get banner url from API
-        $bannersFromApi = $this->api->getBanners($data['placement']);
-        if (empty($bannersFromApi['banners'])) {
-            return false;
-        }
-        $auctionBannerData = array_shift($bannersFromApi['banners']);
-
-        $data['image_url'] = $auctionBannerData['url'];
-
-        $product = $this->productRepository->get($auctionBannerData['sku']);
-
-        if ($product->isObjectNew()) {
-            // product not found
-            return false;
-        }
-
-        $data['promoted_url'] = $product->getProductUrl() . '?auctionId=' . $bannersFromApi['auction_id'];
-
-        return $data;
     }
 }
