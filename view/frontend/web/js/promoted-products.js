@@ -36,8 +36,8 @@ define([
         renderPromotedProducts: function(responseData) {
             let productsContainerEl = $(this.options.hasOwnProperty('productsContainer') ? this.options.productsContainer : this.element);
 
-            if (productsContainerEl.length === 0) {
-                // there is no products section on this page, do nothing
+            if (productsContainerEl.length === 0 || !responseData.hasOwnProperty('html') || responseData.html === '') {
+                // there is no products section on this page (or no html to insert), do nothing
                 return;
             }
             productsContainerEl.prepend(responseData.html);

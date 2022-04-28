@@ -66,6 +66,8 @@ class ProductCollectionHelper
         $collectionLoadMode = $collection->getFlag('topsort_promotions_load_mode');
         $promotedProductsCount = $collection->getFlag('topsort_promotions_count');
         $productsLimit = $collection->getFlag('topsort_products_limit');
+        $preloadBannerData = $collection->getFlag('preload_banner_data');
+
         $onlyPromotedProducts = $collectionLoadMode === 'load_only_topsort_promotions';
 
         $action = $this->actionContext->getRequest()->getFullActionName();
@@ -110,12 +112,15 @@ class ProductCollectionHelper
                     }
                 }
                 $this->topsortApi->trackImpressions($action, $impressions);
+                // run getSponsoredProducts call to load banners if needed
+                if ($preloadBannerData) {
+                    $allSku = $this->collectionHelper->getAllSku($collection);
+                    $this->topsortApi->getSponsoredProducts($allSku, $promotedProductsCount, $preloadBannerData);
+                }
                 return;
             }
             $allSku = $this->collectionHelper->getAllSku($collection);
-            // $allSku = ['4RfbhmIx']; // demo SKUs to test
-
-            $result = $this->topsortApi->getSponsoredProducts($allSku, $promotedProductsCount);
+            $result = $this->topsortApi->getSponsoredProducts($allSku, $promotedProductsCount, $preloadBannerData);
             $sponsoredItemSkuList = isset($result['products']) ? $result['products'] : [];
             $auctionId = isset($result['auction_id']) ? $result['auction_id'] : null;
             $sponsoredItemsList = [];

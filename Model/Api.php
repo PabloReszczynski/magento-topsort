@@ -8,7 +8,9 @@
  */
 namespace Topsort\Integration\Model;
 
+use GuzzleHttp\Exception\ClientException;
 use Magento\Framework\Exception\LocalizedException;
+use Topsort\TopsortException;
 
 class Api
 {
@@ -28,10 +30,6 @@ class Api
      * @var \Magento\Framework\Json\Helper\Data
      */
     private $jsonHelper;
-    /**
-     * @var \Magento\Framework\App\Action\Context
-     */
-    private $actionContext;
 
     static private $bannerAdsData = null;
 
@@ -39,7 +37,6 @@ class Api
         \Topsort\Integration\Helper\Data $helper,
         \Magento\Framework\Json\Helper\Data $jsonHelper,
         \Magento\Customer\Model\Session $customerSession,
-        \Magento\Framework\App\Action\Context $actionContext,
         \Psr\Log\LoggerInterface $logger
     )
     {
@@ -47,12 +44,6 @@ class Api
         $this->customerSession = $customerSession;
         $this->logger = $logger;
         $this->jsonHelper = $jsonHelper;
-        $this->actionContext = $actionContext;
-    }
-
-    private function isBannerDataNeeded()
-    {
-        return $this->actionContext->getRequest()->getParam('banners') ? true : false;
     }
 
     function getSponsoredBanners($placement, $productSkuValues = [])
@@ -87,9 +78,9 @@ class Api
 
             $this->logger->debug("TOPSORT: Banner Auction.\nRequest products count: " . count($products) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
 
-        } catch (\Topsort\TopsortException $e) {
+        } catch (TopsortException $e) {
             $prevException = $e->getPrevious();
-            if ($prevException && $prevException instanceof \GuzzleHttp\Exception\ClientException) {
+            if ($prevException && $prevException instanceof ClientException) {
                 $this->logger->critical($prevException);
                 $this->logger->critical('TOPSORT_RESPONSE:' . (string)$prevException->getResponse()->getBody());
             }
@@ -122,7 +113,7 @@ class Api
         ];
     }
 
-    function getSponsoredProducts($productSkuValues, $promotedProductsCount)
+    function getSponsoredProducts($productSkuValues, $promotedProductsCount, $preloadBannerData = false)
     {
         if (!$this->helper->getIsEnabled()) {
             return [];
@@ -139,7 +130,7 @@ class Api
             $slots = [
                 'listings' => intval($promotedProductsCount),
             ];
-            if ($this->isBannerDataNeeded()) {
+            if ($preloadBannerData) {
                 $slots['bannerAds'] = 1;
                 $bannerOptions['placement'] = 'Category-page';
             }
@@ -151,10 +142,10 @@ class Api
             )->wait();
             $this->logger->debug("TOPSORT: Auction.\nRequest products count: " . count($products) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
 
-        } catch (\Topsort\TopsortException $e) {
+        } catch (TopsortException $e) {
             $prevException = $e->getPrevious();
 
-            if ($prevException && $prevException instanceof \GuzzleHttp\Exception\ClientException) {
+            if ($prevException && $prevException instanceof ClientException) {
                 $this->logger->critical($prevException);
                 $this->logger->critical('TOPSORT_RESPONSE:' . (string)$prevException->getResponse()->getBody());
             }
@@ -221,10 +212,10 @@ class Api
             $this->logger->info('TOPSORT: Impressions tracking. ' . count($data['impressions']) . ' impressions were sent to Topsort.');
             $this->logger->debug("TOPSORT: Impressions tracking.\nRequest: " . $this->jsonHelper->jsonEncode($data) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
             return $result;
-        } catch (\Topsort\TopsortException $e) {
+        } catch (TopsortException $e) {
             $prevException = $e->getPrevious();
 
-            if ($prevException && $prevException instanceof \GuzzleHttp\Exception\ClientException) {
+            if ($prevException && $prevException instanceof ClientException) {
                 $this->logger->critical($prevException);
                 if (isset($data)) {
                     $this->logger->critical('TOPSORT_REQUEST:' . $this->jsonHelper->jsonEncode($data));
@@ -282,10 +273,10 @@ class Api
             $this->logger->info('TOPSORT: Purchase tracking. Invoice ' . $orderNumber . ' was sent to Topsort.');
             $this->logger->debug("TOPSORT: Purchase tracking.\nRequest: " . $this->jsonHelper->jsonEncode($data) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
             return $result;
-        } catch (\Topsort\TopsortException $e) {
+        } catch (TopsortException $e) {
             $prevException = $e->getPrevious();
 
-            if ($prevException && $prevException instanceof \GuzzleHttp\Exception\ClientException) {
+            if ($prevException && $prevException instanceof ClientException) {
                 if (isset($data)) {
                     $this->logger->critical('TOPSORT_REQUEST:' . $this->jsonHelper->jsonEncode($data));
                 }
@@ -324,10 +315,10 @@ class Api
             $this->logger->info('TOPSORT: Click tracking. Product page request for product sku ' . $productSku . ' was reported to Topsort.');
             $this->logger->debug("TOPSORT: Click tracking.\nRequest: " . $this->jsonHelper->jsonEncode($data) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
             return $result;
-        } catch (\Topsort\TopsortException $e) {
+        } catch (TopsortException $e) {
             $prevException = $e->getPrevious();
 
-            if ($prevException && $prevException instanceof \GuzzleHttp\Exception\ClientException) {
+            if ($prevException && $prevException instanceof ClientException) {
                 if (isset($data)) {
                     $this->logger->critical('TOPSORT_REQUEST:' . $this->jsonHelper->jsonEncode($data));
                 }
@@ -356,9 +347,9 @@ class Api
                 ];
             }
             return $bannerAds;
-        } catch (\Topsort\TopsortException $e) {
+        } catch (TopsortException $e) {
             $prevException = $e->getPrevious();
-            if ($prevException && $prevException instanceof \GuzzleHttp\Exception\ClientException) {
+            if ($prevException && $prevException instanceof ClientException) {
                 $this->logger->critical($prevException);
                 $this->logger->critical('TOPSORT_RESPONSE:' . (string)$prevException->getResponse()->getBody());
             }

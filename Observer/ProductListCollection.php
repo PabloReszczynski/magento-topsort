@@ -45,7 +45,7 @@ class ProductListCollection implements ObserverInterface
         $collection = $observer->getData('collection');
         $action = $this->actionContext->getRequest()->getFullActionName();
         $h = $this->helperData;
-        $collectionLoadMode = $promotedProductsCount = $productsLimit = null;
+        $collectionLoadMode = $promotedProductsCount = $productsLimit = $preloadBannerData =null;
         if (($action == 'catalog_category_view' || $action == 'catalogsearch_result_index')
             && $h->getIsEnabledOnCatalogPages()
             && $this->actionContext->getRequest()->getParam('load-promotions', false)) {
@@ -53,6 +53,7 @@ class ProductListCollection implements ObserverInterface
             $collectionLoadMode = 'load_only_topsort_promotions'; // Note: alternative mode is add_topsort_promotions, but its not used anymore
             $promotedProductsCount = $h->getPromotedProductsAmountForCatalogPages();
             $productsLimit = $h->getMinProductsAmountForCatalogPages();
+            $preloadBannerData = $this->isBannerDataNeeded();
         } //else {
             // do nothing, $collectionLoadMode is not assigned
         //}
@@ -62,6 +63,12 @@ class ProductListCollection implements ObserverInterface
             $collection->setFlag('topsort_promotions_load_mode', $collectionLoadMode);
             $collection->setFlag('topsort_promotions_count', $promotedProductsCount);
             $collection->setFlag('topsort_products_limit', $productsLimit);
+            $collection->setFlag('preload_banner_data', $preloadBannerData);
         }
+    }
+
+    private function isBannerDataNeeded()
+    {
+        return $this->actionContext->getRequest()->getParam('banners') ? true : false;
     }
 }
