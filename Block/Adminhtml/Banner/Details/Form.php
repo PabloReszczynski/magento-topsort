@@ -104,7 +104,7 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
 <div style="width: ' . intval($bannerData['width']) . 'px; height: ' . intval($bannerData['height']) . 'px" id="topsort-banner-' . $htmlId . '"></div>
 <script type="text/javascript">
 window.topsortBanners = window.topsortBanners || {};
-window.topsortBanners["Q2F0ZWdvcnktcGFnZXw2MDB4MjAw"] = {
+window.topsortBanners["' . $bannerData['id'] . '"] = {
     "bannerId": "' . $bannerData['id'] . '",
     "elId": "topsort-banner-' . $htmlId . '",
     "placement": "' . $bannerData['placement'] . '"
