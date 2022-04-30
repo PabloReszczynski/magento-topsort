@@ -59,20 +59,18 @@ class ProductCollectionHelper
     public function setupPromotedProductsInCollection($collection)
     {
         if (!$collection->hasFlag('topsort_promotions_load_mode')
-            || $collection->getFlag('topsort_promotions_load_mode') === null) {
+            || $collection->getFlag('topsort_promotions_load_mode') !== true) {
             return;
         }
 
-        $collectionLoadMode = $collection->getFlag('topsort_promotions_load_mode');
         $promotedProductsCount = $collection->getFlag('topsort_promotions_count');
         $productsLimit = $collection->getFlag('topsort_products_limit');
         $preloadBannerData = $collection->getFlag('preload_banner_data');
 
-        $onlyPromotedProducts = $collectionLoadMode === 'load_only_topsort_promotions';
-
         $action = $this->actionContext->getRequest()->getFullActionName();
 
         $initialItems = $collection->getItems();
+
         // track impressions
         $impressions = [];
         foreach ($initialItems as $item) {
@@ -89,13 +87,16 @@ class ProductCollectionHelper
             if ($curPage && $curPage > 1) {
                 // display results only on the first page if paging is used
 
-                // clean up collection if only promoted products should be in the collection
-                if ($onlyPromotedProducts) {
-                    foreach ($collection as $key => $item) {
-                        $collection->removeItemByKey($key);
-                    }
+                // clean up collection since only promoted products should be in the collection
+                foreach ($collection as $key => $item) {
+                    $collection->removeItemByKey($key);
                 }
                 $this->topsortApi->trackImpressions($action, $impressions);
+                // run getSponsoredProducts call to load banners if needed
+                if ($preloadBannerData) {
+                    $allSku = $this->collectionHelper->getAllSku($collection);
+                    $this->topsortApi->getSponsoredProducts($allSku, $promotedProductsCount, $preloadBannerData);
+                }
                 return;
             }
 
@@ -105,12 +106,11 @@ class ProductCollectionHelper
                 // productsLimit should be less then the page size
                 // if productsLimit is not reached - no sponsored products should be shown
 
-                // clean up collection if only promoted products should be in the collection
-                if ($onlyPromotedProducts) {
-                    foreach ($collection as $key => $item) {
-                        $collection->removeItemByKey($key);
-                    }
+                // clean up collection since only promoted products should be in the collection
+                foreach ($collection as $key => $item) {
+                    $collection->removeItemByKey($key);
                 }
+
                 $this->topsortApi->trackImpressions($action, $impressions);
                 // run getSponsoredProducts call to load banners if needed
                 if ($preloadBannerData) {
@@ -136,46 +136,33 @@ class ProductCollectionHelper
                 $sponsoredItemsList[] = $product;
             }
 
-            if (count($sponsoredItemSkuList) > 0 || $onlyPromotedProducts) {
-                // insert items at the beginning of the collection
-                $items = $collection->getItems();
-                foreach ($collection as $key => $item) {
-                    $collection->removeItemByKey($key);
-                }
-                // add new items
-                foreach ($sponsoredItemsList as $item) {
-                    /** @var Product $item */
-                    $id = $item->getId();
-                    $item->setIsPromoted(true);
-                    $item->setAuctionId($auctionId);
-                    $item->setId($id . '-promoted');
-                    $collection->addItem($item);
-                    $item->setId($id);
+            // replace items in the collection
+            foreach ($collection as $key => $item) {
+                $collection->removeItemByKey($key);
+            }
+            // add new items
+            foreach ($sponsoredItemsList as $item) {
+                /** @var Product $item */
+                $id = $item->getId();
+                $item->setIsPromoted(true);
+                $item->setAuctionId($auctionId);
+                $item->setId($id . '-promoted');
+                $collection->addItem($item);
+                $item->setId($id);
 
-                    // add impressions to track
-                    $impressions[$item->getSku()] = [
-                        'product_id' => $id,
-                        'sku' => $item->getSku(),
-                        'auctionId' => $auctionId
-                    ];
-                }
-
-                // re-add $items
-                if (!$onlyPromotedProducts) {
-                    foreach ($items as $item) {
-                        // fix for situations where promoted products were already loaded before into the collection
-                        if ($item->getIsPromoted()) {
-                            continue;
-                        }
-                        $collection->addItem($item);
-                    }
-                }
+                // add impressions to track
+                $impressions[$item->getSku()] = [
+                    'product_id' => $id,
+                    'sku' => $item->getSku(),
+                    'auctionId' => $auctionId
+                ];
             }
 
             $this->topsortApi->trackImpressions($action, $impressions);
 
         } catch (\Exception $e) {
             // something did not work, we write the exception to the log and return the collection to its initial state
+            // TODO if loading of promotions failed, no products should be in the collection - it should be empty
             $this->logger->critical($e);
 
             foreach ($collection as $key => $item) {

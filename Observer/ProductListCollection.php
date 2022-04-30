@@ -8,11 +8,7 @@
  */
 namespace Topsort\Integration\Observer;
 
-use Magento\Catalog\Model\Product;
 use Magento\Framework\Event\ObserverInterface;
-use Topsort\Integration\Model\Api;
-use Topsort\Integration\Model\Product\CollectionHelper;
-use Magento\UrlRewrite\Model\UrlFinderInterface;
 
 class ProductListCollection implements ObserverInterface
 {
@@ -45,12 +41,12 @@ class ProductListCollection implements ObserverInterface
         $collection = $observer->getData('collection');
         $action = $this->actionContext->getRequest()->getFullActionName();
         $h = $this->helperData;
-        $collectionLoadMode = $promotedProductsCount = $productsLimit = $preloadBannerData =null;
+        $promotionsLoadMode = $promotedProductsCount = $productsLimit = $preloadBannerData =null;
         if (($action == 'catalog_category_view' || $action == 'catalogsearch_result_index')
             && $h->getIsEnabledOnCatalogPages()
             && $this->actionContext->getRequest()->getParam('load-promotions', false)) {
             // only add products during the ajax request
-            $collectionLoadMode = 'load_only_topsort_promotions'; // Note: alternative mode is add_topsort_promotions, but its not used anymore
+            $promotionsLoadMode = true;
             $promotedProductsCount = $h->getPromotedProductsAmountForCatalogPages();
             $productsLimit = $h->getMinProductsAmountForCatalogPages();
             $preloadBannerData = $this->isBannerDataNeeded();
@@ -59,8 +55,8 @@ class ProductListCollection implements ObserverInterface
         //}
 
         // mark collection to apply the logic of promoted products once it will be loaded
-        if ($collectionLoadMode !== null) {
-            $collection->setFlag('topsort_promotions_load_mode', $collectionLoadMode);
+        if ($promotionsLoadMode) {
+            $collection->setFlag('topsort_promotions_load_mode', true);
             $collection->setFlag('topsort_promotions_count', $promotedProductsCount);
             $collection->setFlag('topsort_products_limit', $productsLimit);
             $collection->setFlag('preload_banner_data', $preloadBannerData);
