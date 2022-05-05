@@ -1,7 +1,7 @@
 <?php
 namespace Topsort\Integration\Block;
 
-use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\View\Element\Template;
 
 /**
  * Topsort Magento Extension
@@ -15,6 +15,21 @@ use Magento\Framework\Exception\LocalizedException;
  */
 class PromotedProductsLoader extends \Magento\Framework\View\Element\Template
 {
+    /**
+     * @var \Topsort\Integration\Helper\Data
+     */
+    private $dataHelper;
+
+    function __construct(
+        \Topsort\Integration\Helper\Data $dataHelper,
+        Template\Context $context,
+        array $data = [])
+    {
+        $this->dataHelper = $dataHelper;
+        parent::__construct($context, $data);
+    }
+
+
     function getLoaderIconUrl()
     {
         return $this->getViewFileUrl('images/loader-2.gif');
@@ -32,6 +47,11 @@ class PromotedProductsLoader extends \Magento\Framework\View\Element\Template
     public function getToolbarSelector()
     {
         return 'div.toolbar-products';
+    }
+
+    public function getProductsLimit()
+    {
+        return intval($this->dataHelper->getMinProductsAmountForCatalogPages());
     }
 
     public function getProductsContainerSelector()

@@ -39,32 +39,26 @@ class ProductListCollection implements ObserverInterface
     {
         /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $collection */
         $collection = $observer->getData('collection');
-        $action = $this->actionContext->getRequest()->getFullActionName();
+        $request = $this->actionContext->getRequest();
+        $action = $request->getFullActionName();
         $h = $this->helperData;
-        $promotionsLoadMode = $promotedProductsCount = $productsLimit = $preloadBannerData =null;
-        if (($action == 'catalog_category_view' || $action == 'catalogsearch_result_index')
-            && $h->getIsEnabledOnCatalogPages()
-            && $this->actionContext->getRequest()->getParam('load-promotions', false)) {
-            // only add products during the ajax request
-            $promotionsLoadMode = true;
-            $promotedProductsCount = $h->getPromotedProductsAmountForCatalogPages();
-            $productsLimit = $h->getMinProductsAmountForCatalogPages();
-            $preloadBannerData = $this->isBannerDataNeeded();
-        } //else {
-            // do nothing, $collectionLoadMode is not assigned
-        //}
+        $isBannerDataNeeded = $request->getParam('banners') ? true : false;
 
-        // mark collection to apply the logic of promoted products once it will be loaded
-        if ($promotionsLoadMode) {
+        if (($action == 'catalog_category_view' || $action == 'catalogsearch_result_index')
+            && ($h->getIsEnabledOnCatalogPages() || $isBannerDataNeeded)
+            && $request->getParam('load-promotions', false)) {
+            // only add promoted products during the ajax request
+
+            $promotedProductsCount = 0;
+            if ($request->getParam('load_promoted_products') == 1) {
+                $promotedProductsCount = $h->getPromotedProductsAmountForCatalogPages();
+            }
+
+            // mark collection to apply the logic of promoted products once it will be loaded
             $collection->setFlag('topsort_promotions_load_mode', true);
             $collection->setFlag('topsort_promotions_count', $promotedProductsCount);
-            $collection->setFlag('topsort_products_limit', $productsLimit);
-            $collection->setFlag('preload_banner_data', $preloadBannerData);
-        }
+            $collection->setFlag('preload_banner_data', $isBannerDataNeeded);
+        } // else do nothing, $collectionLoadMode is not assigned
     }
 
-    private function isBannerDataNeeded()
-    {
-        return $this->actionContext->getRequest()->getParam('banners') ? true : false;
-    }
 }

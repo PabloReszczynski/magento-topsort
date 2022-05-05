@@ -12,9 +12,29 @@ define([
 
         bannerHtml: '',
 
+        options: {
+            loaderIcon: '',
+            loadPromotionsUrl: '',
+            loaderMaskContainer: 'div.products',
+            productsContainer: 'ol.products',
+            productItemSelector: '.product-item',
+            toolbarSelector: 'div.toolbar-products',
+            productsLimit: 5 // minimum amount of products required for promotions to be displayed
+        },
+
+        getProductsCount: function() {
+            try {
+                return $(this.options.productsContainer).find(this.options.productItemSelector);
+            } catch (e) {
+                if (window.hasOwnProperty('console') && window.console.hasOwnProperty('error')) {
+                    console.error(e);
+                }
+            }
+            return 0;
+        },
+
         getBannerIdsOnPage: function() {
             let ids = [];
-            let hasBanner = false;
             if (window.hasOwnProperty('topsortBanners')) {
                 jQuery.each(window.topsortBanners, function(bannerId, bannerConfig) {
                     if (bannerConfig.placement === 'Category-page' || bannerConfig.placement === 'Search-page') {
@@ -53,9 +73,40 @@ define([
             return this.bannerHtml;
         },
 
+        // check current page number before loading starts
+        getCurrentPageNumber: function() {
+            let page = 0;
+            let config = this.options;
+            try {
+                if (config.hasOwnProperty('toolbarSelector')) {
+                    let toolbar = $(config.toolbarSelector);
+                    if (toolbar.length !== 0) {
+                        // there is no getCurrentPage method in Magento 2.3.5
+                        try {
+                            page = toolbar.productListToolbarForm("getCurrentPage");
+                        } catch (e) {
+                            if (window.hasOwnProperty('console') && window.console.hasOwnProperty('log')) {
+                                console.log(e);
+                                console.log('Method getCurrentPage is not available in some versions of Magento. This is not essential and this notice might be ignored.');
+                            }
+                            page = 1; // assume that we are on the first page
+                        }
+                    }
+                }
+            } catch (e) {
+                if (window.hasOwnProperty('console') && window.console.hasOwnProperty('error')) {
+                    console.error(e);
+                }
+            }
+            return page;
+        },
+
         /** @inheritdoc */
         _create: function () {
+            this.loadPromotions();
+        },
 
+        loadPromotions: function() {
             let element = this.element;
             let config = this.options;
             let me = this;
@@ -68,6 +119,7 @@ define([
                 return;
             }
 
+            // initialize loading state
             loaderEl.loader({
                 icon: config.loaderIcon
             });
@@ -75,75 +127,61 @@ define([
             loaderEl.trigger('processStart');
             let finished = false;
 
-            // let other widgets initialize first
+            // let other widgets initialize first and do the loading of promotions
             setTimeout(function () {
 
-                // check current page number before loading starts
-                try {
-                    if (config.hasOwnProperty('toolbarSelector')) {
-                        let toolbar = $(config.toolbarSelector);
-                        if (toolbar.length !== 0) {
-                            // there is no getCurrentPage method in Magento 2.3.5
-                            let page;
-                            try {
-                                page = toolbar.productListToolbarForm("getCurrentPage");
-                            } catch (e) {
-                                if (window.hasOwnProperty('console') && window.console.hasOwnProperty('log')) {
-                                    console.log(e);
-                                    console.log('Method getCurrentPage is not available in some versions of Magento. This is not essential and this notice might be ignored.');
-                                }
-                                page = 1; // assume that we are on the first page
-                            }
-                            if (page > 1) {
-                                // remove the loading state from the page and continue sending the ajax request in order
-                                // to track impressions
-                                loaderEl.trigger('processStop');
-                            }
+                let bannerIds = me.getBannerIdsOnPage();
+                let productsCount = me.getProductsCount();
+                let loadBanners = bannerIds !== '';
+                let currentPage = me.getCurrentPageNumber();
+                let loadPromotedProducts = productsCount >= me.options.productsLimit || currentPage > 1;
+
+                // remove the loading state from the page and continue sending the ajax request
+                // only if banner ads have to be loaded
+                if (!loadPromotedProducts) {
+                    loaderEl.trigger('processStop');
+                } else {
+                    // give 5 seconds to load the promotions, else - remove the loading mask
+                    setTimeout(function() {
+                        if (!finished) {
+                            loaderEl.trigger('processStop');
                         }
-                    }
-                } catch (e) {
-                    if (window.hasOwnProperty('console')) {
-                        console.error(e);
-                    }
+                    }, 5000);
                 }
 
-                // give 5 seconds to load the promotions, else - remove the loading mask
-                setTimeout(function() {
-                    if (!finished) {
-                        loaderEl.trigger('processStop');
-                    }
-                }, 5000);
-
-                $.ajax({
-                    url: config.loadPromotionsUrl,
-                    type: 'GET',
-                    async: true,
-                    data: {
-                        banners: me.getBannerIdsOnPage()
-                    },
-                    dataType: 'json',
-                }).done(function (data) {
-                    if (data.error) {
-                        if (window.console && window.console.error) {
-                            console.error(data.error);
+                if (loadPromotedProducts || loadBanners) {
+                    $.ajax({
+                        url: config.loadPromotionsUrl,
+                        type: 'GET',
+                        async: true,
+                        data: {
+                            banners: bannerIds,
+                            load_promoted_products: loadPromotedProducts ? 1 : 0
+                        },
+                        dataType: 'json',
+                    }).done(function (data) {
+                        if (data.error) {
+                            if (window.hasOwnProperty('console') && window.console.hasOwnProperty('error')) {
+                                console.error(data.error);
+                            }
+                        } else {
+                            me.saveBannerHtml(data);
+                            me.renderPromotedProducts(data);
                         }
-                    } else {
-                        me.saveBannerHtml(data);
-                        me.renderPromotedProducts(data);
-                    }
-                    setTimeout(function() {
+                        setTimeout(function() {
+                            loaderEl.trigger('processStop');
+                        }, 500);
+                        finished = true;
+                        me.loaded = true;
+                    }).fail(function (jqXHR, textStatus) {
+                        if (window.hasOwnProperty('console') && window.console.hasOwnProperty('log')) {
+                            console.log(textStatus);
+                        }
                         loaderEl.trigger('processStop');
-                    }, 500);
-                    finished = true;
-                    me.loaded = true;
-                }).fail(function (jqXHR, textStatus) {
-                    if (window.hasOwnProperty('console') && window.console.hasOwnProperty('log')) {
-                        console.log(textStatus);
-                    }
-                    loaderEl.trigger('processStop');
-                    finished = true;
-                    me.loaded = true;
-                });
+                        finished = true;
+                        me.loaded = true;
+                    });
+                }
             }, 1);
         }
     });

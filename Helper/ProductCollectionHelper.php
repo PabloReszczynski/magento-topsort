@@ -62,9 +62,8 @@ class ProductCollectionHelper
             || $collection->getFlag('topsort_promotions_load_mode') !== true) {
             return;
         }
-
+        // TODO improve efficiency if $promotedProductsCount === 0
         $promotedProductsCount = $collection->getFlag('topsort_promotions_count');
-        $productsLimit = $collection->getFlag('topsort_products_limit');
         $preloadBannerData = $collection->getFlag('preload_banner_data');
 
         $action = $this->actionContext->getRequest()->getFullActionName();
@@ -76,8 +75,8 @@ class ProductCollectionHelper
 
         try {
             $curPage = $collection->getCurPage();
-            $pageSize = $collection->getPageSize();
             if ($curPage && $curPage > 1) {
+                // TODO just set $promotedProductsCount = 0
                 // display results only on the first page if paging is used
 
                 // clean up collection since only promoted products should be in the collection
@@ -92,24 +91,6 @@ class ProductCollectionHelper
                 return;
             }
 
-            // check the products limit
-            $productsCount = $collection->count();
-            if ($productsLimit > 0 && $pageSize > $productsLimit && $productsCount < $productsLimit) {
-                // productsLimit should be less then the page size
-                // if productsLimit is not reached - no sponsored products should be shown
-
-                // clean up collection since only promoted products should be in the collection
-                foreach ($collection as $key => $item) {
-                    $collection->removeItemByKey($key);
-                }
-
-                // run getSponsoredProducts call to load banners if needed
-                if ($preloadBannerData) {
-                    $allSku = $this->collectionHelper->getAllSku($collection);
-                    $this->topsortApi->getSponsoredProducts($allSku, $promotedProductsCount, $preloadBannerData);
-                }
-                return;
-            }
             $allSku = $this->collectionHelper->getAllSku($collection);
             $result = $this->topsortApi->getSponsoredProducts($allSku, $promotedProductsCount, $preloadBannerData);
             $sponsoredItemSkuList = isset($result['products']) ? $result['products'] : [];
