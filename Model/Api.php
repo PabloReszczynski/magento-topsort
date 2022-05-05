@@ -203,12 +203,12 @@ class Api
                 }
                 $apiImpressions[] = $apiImpression;
             }
-
             $data = [
                 'session' => $this->getSessionData(),
                 'impressions' => $apiImpressions
             ];
             $result = $this->getProvider()->report_impressions($data)->wait();
+
             $this->logger->info('TOPSORT: Impressions tracking. ' . count($data['impressions']) . ' impressions were sent to Topsort.');
             $this->logger->debug("TOPSORT: Impressions tracking.\nRequest: " . $this->jsonHelper->jsonEncode($data) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
             return $result;
@@ -223,13 +223,17 @@ class Api
                 $this->logger->critical('TOPSORT_RESPONSE:' . (string)$prevException->getResponse()->getBody());
             }
             $this->logger->critical($e->getPrevious());
-            return [];
+            return [
+                'error' => $e->getMessage()
+            ];
         } catch (\Exception $e) {
             $this->logger->critical($e);
             if ($e->getPrevious()) {
                 $this->logger->critical($e->getPrevious());
             }
-            return [];
+            return [
+                'error' => 'unknown'
+            ];
         }
     }
 

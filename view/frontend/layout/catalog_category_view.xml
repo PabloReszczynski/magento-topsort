@@ -10,5 +10,9 @@
             <block class="Topsort\Integration\Block\PromotedProductsLoader" name="topsort.promoted-products-loader"
                    template="Topsort_Integration::topsort/promoted_products_loader.phtml"/>
         </referenceContainer>
+        <referenceContainer name="category.product.list.additional">
+            <block class="Topsort\Integration\Block\Tracking\Impressions\CategoryPage" name="topsort.product-impressions-tracking"
+                   template="Topsort_Integration::topsort/impressions_tracking.phtml"/>
+        </referenceContainer>
     </body>
 </page>

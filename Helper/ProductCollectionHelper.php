@@ -73,13 +73,6 @@ class ProductCollectionHelper
 
         // track impressions
         $impressions = [];
-        foreach ($initialItems as $item) {
-            /** @var Product $item */
-            $impressions[$item->getSku()] = [
-                'product_id' => $item->getId(),
-                'sku' => $item->getSku()
-            ];
-        }
 
         try {
             $curPage = $collection->getCurPage();
@@ -91,7 +84,6 @@ class ProductCollectionHelper
                 foreach ($collection as $key => $item) {
                     $collection->removeItemByKey($key);
                 }
-                $this->topsortApi->trackImpressions($action, $impressions);
                 // run getSponsoredProducts call to load banners if needed
                 if ($preloadBannerData) {
                     $allSku = $this->collectionHelper->getAllSku($collection);
@@ -111,7 +103,6 @@ class ProductCollectionHelper
                     $collection->removeItemByKey($key);
                 }
 
-                $this->topsortApi->trackImpressions($action, $impressions);
                 // run getSponsoredProducts call to load banners if needed
                 if ($preloadBannerData) {
                     $allSku = $this->collectionHelper->getAllSku($collection);
@@ -154,7 +145,7 @@ class ProductCollectionHelper
                 $impressions[$item->getSku()] = [
                     'product_id' => $id,
                     'sku' => $item->getSku(),
-                    'auctionId' => $auctionId
+                    'auction_id' => $auctionId
                 ];
             }
 

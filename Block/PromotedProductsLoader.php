@@ -1,6 +1,8 @@
 <?php
 namespace Topsort\Integration\Block;
 
+use Magento\Framework\Exception\LocalizedException;
+
 /**
  * Topsort Magento Extension
  *
