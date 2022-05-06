@@ -109,9 +109,14 @@ define([
             if (window.hasOwnProperty('console') && window.console.hasOwnProperty('log')) {
                 console.error(errorMessage);
             }
+            this.removeBannerCls('topsort-banner-loading');
+            this.addBannerCls('topsort-banner-loaded');
+            this.addBannerCls('topsort-empty-banner');
         },
 
         renderBanner: function(bannerHtml) {
+            this.removeBannerCls('topsort-banner-loading');
+            this.addBannerCls('topsort-banner-loaded');
             let bannerContainerEl = $(this.options.hasOwnProperty('bannerContainer') ? this.options.bannerContainer : this.element);
 
             if (bannerContainerEl.length === 0) {
@@ -121,6 +126,26 @@ define([
 
             bannerContainerEl.html(bannerHtml);
             bannerContainerEl.trigger('contentUpdated');
+
+            if (!bannerHtml) {
+                this.addBannerCls('topsort-empty-banner');
+            }
+        },
+
+        removeBannerCls: function(cls) {
+            let bannerContainerEl = $(this.options.hasOwnProperty('bannerContainer') ? this.options.bannerContainer : this.element);
+
+            if (bannerContainerEl.length !== 0) {
+                bannerContainerEl.removeClass(cls);
+            }
+        },
+
+        addBannerCls: function(cls) {
+            let bannerContainerEl = $(this.options.hasOwnProperty('bannerContainer') ? this.options.bannerContainer : this.element);
+
+            if (bannerContainerEl.length !== 0) {
+                bannerContainerEl.addClass(cls);
+            }
         },
 
         /** @inheritdoc */
@@ -128,6 +153,8 @@ define([
 
             let config = this.options;
             let me = this;
+
+            me.addBannerCls('topsort-banner-loading');
 
             // let other widgets initialize first
             setTimeout(function () {
@@ -175,12 +202,4 @@ define([
     });
 
     return $.topsort.banner;
-
-
-
-    return function(config, element) {
-
-
-
-    };
 });

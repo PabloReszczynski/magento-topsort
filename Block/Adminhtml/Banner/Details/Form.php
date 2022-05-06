@@ -101,7 +101,7 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
     {
         $htmlId = $this->getValidHtmlId($bannerData['id']);
         return '<!-- Topsort Banner Code Start -->
-<div style="width: ' . intval($bannerData['width']) . 'px; height: ' . intval($bannerData['height']) . 'px" id="topsort-banner-' . $htmlId . '"></div>
+<div id="topsort-banner-' . $htmlId . '" class="topsort-banner-container" style="width: ' . intval($bannerData['width']) . 'px; height: ' . intval($bannerData['height']) . 'px"></div>
 <script type="text/javascript">
 window.topsortBanners = window.topsortBanners || {};
 window.topsortBanners["' . $bannerData['id'] . '"] = {
