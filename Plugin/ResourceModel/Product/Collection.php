@@ -98,7 +98,7 @@ class Collection
             $collection->setFlag('skip_promotions_request', true);
         }
         //disable paging
+        $collection->setCurPage(1);
         $collection->setPageSize(0);
-        // TODO set also max size for elastic search query based on configuration parameters
     }
 }
