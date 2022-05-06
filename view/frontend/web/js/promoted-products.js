@@ -24,7 +24,7 @@ define([
 
         getProductsCount: function() {
             try {
-                return $(this.options.productsContainer).find(this.options.productItemSelector);
+                return $(this.options.productsContainer).find(this.options.productItemSelector).length;
             } catch (e) {
                 if (window.hasOwnProperty('console') && window.console.hasOwnProperty('error')) {
                     console.error(e);

@@ -5,6 +5,7 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Magento\Elasticsearch\Model\ResourceModel\Fulltext\Collection\SearchResultApplier" type="Topsort\Integration\Model\ResourceModel\Fulltext\Collection\SearchResultApplier"/>
     <type name="Magento\Catalog\Block\Product\ImageFactory">
         <plugin name="topsort_image_factory_plugin" type="Topsort\Integration\Plugin\Block\Product\ImageFactory" />
     </type>

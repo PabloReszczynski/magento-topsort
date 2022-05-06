@@ -51,4 +51,9 @@ class CollectionHelper extends \Magento\Catalog\Model\ResourceModel\Product\Coll
     {
         return $collection->_bindParams;
     }
+
+    public function getCurPageWithoutLoad(\Magento\Catalog\Model\ResourceModel\Product\Collection $collection)
+    {
+        return $collection->_curPage;
+    }
 }

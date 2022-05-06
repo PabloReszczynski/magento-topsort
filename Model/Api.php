@@ -62,6 +62,8 @@ class Api
             if ($placement === 'Category-page' && self::$bannerAdsData !== null) {
                 // use cached result from promoted products request
                 $result = ['slots' => ['bannerAds' => self::$bannerAdsData]];
+
+                $this->logger->debug("TOPSORT: Banners are taken from cache.");
             } else {
                 $result = $sdk->create_auction(
                     [
@@ -74,9 +76,9 @@ class Api
                         'placement' => $placement
                     ]
                 )->wait();
-            }
 
-            $this->logger->debug("TOPSORT: Banner Auction.\nRequest products count: " . count($products) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
+                $this->logger->debug("TOPSORT: Banner Auction.\nRequest products count: " . count($products) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
+            }
 
         } catch (TopsortException $e) {
             $prevException = $e->getPrevious();
@@ -166,9 +168,9 @@ class Api
             $auctionId = $result['slots']['listings']['auctionId'];
         }
 
-        if (isset($result['slots']['bannerAds'])) {
+        if ($preloadBannerData) {
             // let bannerAds be reused later during the next getBanners() call
-            self::$bannerAdsData = $result['slots']['bannerAds'];
+            self::$bannerAdsData = isset($result['slots']['bannerAds']) ? $result['slots']['bannerAds'] : [];
         }
         return [
             'products' => $winnersList,
