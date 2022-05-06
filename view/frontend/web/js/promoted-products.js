@@ -134,7 +134,7 @@ define([
                 let productsCount = me.getProductsCount();
                 let loadBanners = bannerIds !== '';
                 let currentPage = me.getCurrentPageNumber();
-                let loadPromotedProducts = productsCount >= me.options.productsLimit || currentPage > 1;
+                let loadPromotedProducts = productsCount >= me.options.productsLimit && currentPage < 2;
 
                 // remove the loading state from the page and continue sending the ajax request
                 // only if banner ads have to be loaded
