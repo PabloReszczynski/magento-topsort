@@ -116,6 +116,8 @@ define([
 
             if (productsContainerEl.length === 0) {
                 // there is no products section on this page, do nothing
+                // Note: if there are no products in category, banner will also be empty
+                this.loaded = true;
                 return;
             }
 

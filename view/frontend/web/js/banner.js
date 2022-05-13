@@ -64,7 +64,7 @@ define([
 
                 if (me.isPromotedProductsComponentInitialized()) {
                     // call success function
-                    callbackFn();
+                    callbackFn.call(me);
                     // stop waiting
                     return;
                 }
@@ -73,7 +73,7 @@ define([
                 if (countDown > 1) {
                     setTimeout(attemptFn, frequency);
                 } else {
-                    errorCallbackFn("Component not initialized after " + maxSeconds + " seconds.");
+                    errorCallbackFn.call(me, "Component not initialized after " + maxSeconds + " seconds.");
                 }
             }
 
@@ -89,7 +89,7 @@ define([
 
                 if (me.isPromotedProductsLoaded()) {
                     // call success function
-                    callbackFn();
+                    callbackFn.call(me);
                     // stop waiting
                     return;
                 }
@@ -98,7 +98,7 @@ define([
                 if (countDown > 1) {
                     setTimeout(attemptFn, frequency);
                 } else {
-                    errorCallbackFn("Promotions are not loaded after " + maxSeconds + " seconds.");
+                    errorCallbackFn.call(me, "Promotions are not loaded after " + maxSeconds + " seconds.");
                 }
             }
 

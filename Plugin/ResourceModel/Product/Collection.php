@@ -56,7 +56,7 @@ class Collection
         return null; // return null here means that we do not change the original arguments
     }
 
-    function afterLoad(\Magento\Catalog\Model\ResourceModel\Product\Collection $collection, $printQuery = false, $logQuery = false, $result)
+    function afterLoad(\Magento\Catalog\Model\ResourceModel\Product\Collection $collection, $result, $printQuery = false, $logQuery = false)
     {
         if ($collection->hasFlag('auction_id') && $collection->getFlag('auction_id')) {
             $auctionId = $collection->getFlag('auction_id');

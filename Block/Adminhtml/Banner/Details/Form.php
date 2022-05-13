@@ -70,7 +70,7 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
             'textarea',
             [
                 'name' => 'html_code',
-                'rows' => 30,
+                'rows' => 3,
                 'label' => __('HTML Code'),
                 'title' => __('HTML Code'),
                 'onclick' => "this.select()",
@@ -92,49 +92,26 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
     {
         $id = $this->getRequest()->getParam('id');
         $data = $this->collection->getBannerDataById($id);
-        $data['html_code'] = $this->getBannerHtml($data);
+        $data['html_code'] = $this->getBannerBlockHtml($data);
         $data['dimensions'] = $data['width'] . 'x' . $data['height'];
         return $data;
     }
 
     private function getBannerHtml($bannerData)
     {
-        $htmlId = $this->getValidHtmlId($bannerData['id']);
-        return '<!-- Topsort Banner Code Start -->
-<div id="topsort-banner-' . $htmlId . '" class="topsort-banner-container" style="width: ' . intval($bannerData['width']) . 'px; height: ' . intval($bannerData['height']) . 'px"></div>
-<script type="text/javascript">
-window.topsortBanners = window.topsortBanners || {};
-window.topsortBanners["' . $bannerData['id'] . '"] = {
-    "bannerId": "' . $bannerData['id'] . '",
-    "elId": "topsort-banner-' . $htmlId . '",
-    "placement": "' . $bannerData['placement'] . '"
-};
-</script>
-<script type="text/x-magento-init">
-{
-    "#topsort-banner-' . $htmlId . '": {
-        "topsort-banner": {
-            "bannerId": "' . $bannerData['id'] . '",
-            "height": ' . intval($bannerData['height']) . ',
-            "width": ' . intval($bannerData['width']) . ',
-            "placement": "' . $bannerData['placement'] . '"
-        }
-    }
-}
-</script>
-<!-- Topsort Banner Code End -->
-';
+        return $this->getLayout()->createBlock(\Topsort\Integration\Block\Banner::class, "banner-html", [
+            'data' => [
+                'banner_id' => $bannerData['id'],
+                'width' => intval($bannerData['width']),
+                'height' => intval($bannerData['height']),
+                'placement' => $bannerData['placement']
+            ]
+        ])->toHtml();
     }
 
-    private function getValidHtmlId($string) {
-        //Lower case everything
-        $string = strtolower($string);
-        //Make alphanumeric (removes all other characters)
-        $string = preg_replace("/[^a-z0-9_\s-]/", "", $string);
-        //Clean up multiple dashes or whitespaces
-        $string = preg_replace("/[\s-]+/", " ", $string);
-        //Convert whitespaces and underscore to dash
-        $string = preg_replace("/[\s_]/", "-", $string);
-        return $string;
+    private function getBannerBlockHtml($bannerData)
+    {
+        $class = \Topsort\Integration\Block\Banner::class;
+        return "{{block class=\"$class\" banner_id=\"{$bannerData['id']}\" width=\"{$bannerData['width']}\" height=\"{$bannerData['height']}\" placement=\"{$bannerData['placement']}\"}}";
     }
 }

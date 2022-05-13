@@ -1,0 +1,28 @@
+<?php
+/**
+ * @var $block \Topsort\Integration\Block\Banner
+ */
+?>
+<!-- Topsort Banner Code Start -->
+<div id="<?= $block->getHtmlId() ?>" class="topsort-banner-container" style="width: <?= $block->getWidth() ?>px; height: <?= $block->getHeight() ?>px"></div>
+<script type="text/javascript">
+    window.topsortBanners = window.topsortBanners || {};
+    window.topsortBanners["<?= $block->getBannerId() ?>"] = {
+        "bannerId": "<?= $block->getBannerId() ?>",
+        "elId": "<?= $block->getHtmlId() ?>",
+        "placement": "<?= $block->getPlacement() ?>"
+    };
+</script>
+<script type="text/x-magento-init">
+{
+    "#<?= $block->getHtmlId() ?>": {
+        "topsort-banner": {
+            "bannerId": "<?= $block->getBannerId() ?>",
+            "height": <?= $block->getHeight() ?>,
+            "width": <?= $block->getWidth() ?>,
+            "placement": "<?= $block->getPlacement() ?>"
+        }
+    }
+}
+</script>
+<!-- Topsort Banner Code End -->
