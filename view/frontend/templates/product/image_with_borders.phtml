@@ -27,6 +27,7 @@ $trackingUrl = $block->getUrl('topsort/product/tracking', [
             });
         }
 
+        // subscription to the events. might also be implemented using magento-init way
         $(document).ready(function() {
             <?php if ($block->getIsPromoted()) : ?>
                 let promotedLabel = document.createElement( "div" );

@@ -2,7 +2,7 @@
 /**
  * @var \Magento\Catalog\Block\Product\View $block
  */
-$url = $block->getUrl('topsort/product/tracking', [
+$url = $block->getUrl('topsort/tracking/product', [
     'id' => $block->getProduct()->getId(),
     'auction_id' => $block->getRequest()->getParam('auction_id', null)
 ]);

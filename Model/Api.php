@@ -8,7 +8,9 @@
  */
 namespace Topsort\Integration\Model;
 
+use GuzzleHttp\Exception\ClientException;
 use Magento\Framework\Exception\LocalizedException;
+use Topsort\TopsortException;
 
 class Api
 {
@@ -29,6 +31,8 @@ class Api
      */
     private $jsonHelper;
 
+    static private $bannerAdsData = null;
+
     function __construct(
         \Topsort\Integration\Helper\Data $helper,
         \Magento\Framework\Json\Helper\Data $jsonHelper,
@@ -42,8 +46,7 @@ class Api
         $this->jsonHelper = $jsonHelper;
     }
 
-
-    function getSponsoredProducts($productSkuValues, $promotedProductsCount)
+    function getSponsoredBanners($placement, $productSkuValues = [])
     {
         if (!$this->helper->getIsEnabled()) {
             return [];
@@ -56,20 +59,95 @@ class Api
         }
 
         try {
-            $result = $sdk->create_auction(
-                [
-                    'listings' => intval($promotedProductsCount),
-                ],
-                $products,
-                $this->getSessionData()
-            )->wait();
+            if ($placement === 'Category-page' && self::$bannerAdsData !== null) {
+                // use cached result from promoted products request
+                $result = ['slots' => ['bannerAds' => self::$bannerAdsData]];
 
+                $this->logger->debug("TOPSORT: Banners are taken from cache.");
+            } else {
+                $result = $sdk->create_auction(
+                    [
+                        'listings' => 1,
+                        'bannerAds' => 1
+                    ],
+                    $products,
+                    $this->getSessionData(),
+                    [
+                        'placement' => $placement
+                    ]
+                )->wait();
+
+                $this->logger->debug("TOPSORT: Banner Auction.\nRequest products count: " . count($products) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
+            }
+
+        } catch (TopsortException $e) {
+            $prevException = $e->getPrevious();
+            if ($prevException && $prevException instanceof ClientException) {
+                $this->logger->critical($prevException);
+                $this->logger->critical('TOPSORT_RESPONSE:' . (string)$prevException->getResponse()->getBody());
+            }
+            $this->logger->critical($e->getPrevious());
+            return [];
+        } catch (\Exception $e) {
+            $this->logger->critical($e->getPrevious());
+            return [];
+        }
+        $winnersList = [];
+        $auctionId = null;
+        if (isset($result['slots']['bannerAds']['winners'], $result['slots']['bannerAds']['auctionId'])) {
+            foreach ($result['slots']['bannerAds']['winners'] as $winner) {
+                if (isset($winner['rank']) && isset($winner['productId'])) {
+                    $winnersList[$winner['rank']] = [
+                        'sku' => $winner['productId'] ?? $winner['winnerId'] ?? '',
+                        'url' => $winner['assetUrl'] ?? '#',
+                        'winnerType' => $winner['winnerType'] ?? '',
+                        'winnerId' => $winner['winnerId'] ?? '',
+                        // $winner['resolvedBidId'] not used
+                    ];
+                }
+            }
+            $auctionId = $result['slots']['bannerAds']['auctionId'];
+        }
+
+        return [
+            'banners' => $winnersList,
+            'auction_id' => $auctionId
+        ];
+    }
+
+    function getSponsoredProducts($productSkuValues, $promotedProductsCount, $preloadBannerData = false)
+    {
+        if (!$this->helper->getIsEnabled()) {
+            return [];
+        }
+        $sdk = $this->getProvider();
+
+        $products = [];
+        foreach ($productSkuValues as $productId) {
+            $products[] = ['productId' => $productId];
+        }
+
+        try {
+            $bannerOptions = null;
+            $slots = [
+                'listings' => intval($promotedProductsCount),
+            ];
+            if ($preloadBannerData) {
+                $slots['bannerAds'] = 1;
+                $bannerOptions['placement'] = 'Category-page';
+            }
+            $result = $sdk->create_auction(
+                $slots,
+                $products,
+                $this->getSessionData(),
+                $bannerOptions
+            )->wait();
             $this->logger->debug("TOPSORT: Auction.\nRequest products count: " . count($products) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
 
-        } catch (\Topsort\TopsortException $e) {
+        } catch (TopsortException $e) {
             $prevException = $e->getPrevious();
 
-            if ($prevException && $prevException instanceof \GuzzleHttp\Exception\ClientException) {
+            if ($prevException && $prevException instanceof ClientException) {
                 $this->logger->critical($prevException);
                 $this->logger->critical('TOPSORT_RESPONSE:' . (string)$prevException->getResponse()->getBody());
             }
@@ -88,6 +166,11 @@ class Api
                 }
             }
             $auctionId = $result['slots']['listings']['auctionId'];
+        }
+
+        if ($preloadBannerData) {
+            // let bannerAds be reused later during the next getBanners() call
+            self::$bannerAdsData = isset($result['slots']['bannerAds']) ? $result['slots']['bannerAds'] : [];
         }
         return [
             'products' => $winnersList,
@@ -122,19 +205,19 @@ class Api
                 }
                 $apiImpressions[] = $apiImpression;
             }
-
             $data = [
                 'session' => $this->getSessionData(),
                 'impressions' => $apiImpressions
             ];
             $result = $this->getProvider()->report_impressions($data)->wait();
-            $this->logger->info('TOPSORT: Impressions tracking. ' . count($result['impressions']) . ' impressions were sent to Topsort.');
+
+            $this->logger->info('TOPSORT: Impressions tracking. ' . count($data['impressions']) . ' impressions were sent to Topsort.');
             $this->logger->debug("TOPSORT: Impressions tracking.\nRequest: " . $this->jsonHelper->jsonEncode($data) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
             return $result;
-        } catch (\Topsort\TopsortException $e) {
+        } catch (TopsortException $e) {
             $prevException = $e->getPrevious();
 
-            if ($prevException && $prevException instanceof \GuzzleHttp\Exception\ClientException) {
+            if ($prevException && $prevException instanceof ClientException) {
                 $this->logger->critical($prevException);
                 if (isset($data)) {
                     $this->logger->critical('TOPSORT_REQUEST:' . $this->jsonHelper->jsonEncode($data));
@@ -142,10 +225,17 @@ class Api
                 $this->logger->critical('TOPSORT_RESPONSE:' . (string)$prevException->getResponse()->getBody());
             }
             $this->logger->critical($e->getPrevious());
-            return [];
+            return [
+                'error' => $e->getMessage()
+            ];
         } catch (\Exception $e) {
-            $this->logger->critical($e->getPrevious());
-            return [];
+            $this->logger->critical($e);
+            if ($e->getPrevious()) {
+                $this->logger->critical($e->getPrevious());
+            }
+            return [
+                'error' => 'unknown'
+            ];
         }
     }
 
@@ -189,10 +279,10 @@ class Api
             $this->logger->info('TOPSORT: Purchase tracking. Invoice ' . $orderNumber . ' was sent to Topsort.');
             $this->logger->debug("TOPSORT: Purchase tracking.\nRequest: " . $this->jsonHelper->jsonEncode($data) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
             return $result;
-        } catch (\Topsort\TopsortException $e) {
+        } catch (TopsortException $e) {
             $prevException = $e->getPrevious();
 
-            if ($prevException && $prevException instanceof \GuzzleHttp\Exception\ClientException) {
+            if ($prevException && $prevException instanceof ClientException) {
                 if (isset($data)) {
                     $this->logger->critical('TOPSORT_REQUEST:' . $this->jsonHelper->jsonEncode($data));
                 }
@@ -231,13 +321,41 @@ class Api
             $this->logger->info('TOPSORT: Click tracking. Product page request for product sku ' . $productSku . ' was reported to Topsort.');
             $this->logger->debug("TOPSORT: Click tracking.\nRequest: " . $this->jsonHelper->jsonEncode($data) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
             return $result;
-        } catch (\Topsort\TopsortException $e) {
+        } catch (TopsortException $e) {
             $prevException = $e->getPrevious();
 
-            if ($prevException && $prevException instanceof \GuzzleHttp\Exception\ClientException) {
+            if ($prevException && $prevException instanceof ClientException) {
                 if (isset($data)) {
                     $this->logger->critical('TOPSORT_REQUEST:' . $this->jsonHelper->jsonEncode($data));
                 }
+                $this->logger->critical($prevException);
+                $this->logger->critical('TOPSORT_RESPONSE:' . (string)$prevException->getResponse()->getBody());
+            }
+            $this->logger->critical($e->getPrevious());
+            return [];
+        } catch (\Exception $e) {
+            $this->logger->critical($e->getPrevious());
+            return [];
+        }
+    }
+
+    public function getBannerAdLocations()
+    {
+        try {
+            $sdk = $this->getAdsApiProvider();
+            $result = $sdk->get_ad_locations()->wait();
+            $bannerAds = [];
+            foreach (($result['bannerAds'] ?? []) as $bannerAd) {
+                $bannerAds[] = [
+                    'width' => $bannerAd['dimensions']['width'] ?? 0,
+                    'height' => $bannerAd['dimensions']['height'] ?? 0,
+                    'placement' => $bannerAd['placement']['page'],
+                ];
+            }
+            return $bannerAds;
+        } catch (TopsortException $e) {
+            $prevException = $e->getPrevious();
+            if ($prevException && $prevException instanceof ClientException) {
                 $this->logger->critical($prevException);
                 $this->logger->critical('TOPSORT_RESPONSE:' . (string)$prevException->getResponse()->getBody());
             }
@@ -265,6 +383,16 @@ class Api
         $apiKey = $this->helper->getApiKey();
         $apiUrl = $this->helper->getApiUrl();
         return new \Topsort\SDK('magento-marketplace', $apiKey, $apiUrl);
+    }
+
+    /**
+     * @return \Topsort\SDK
+     */
+    protected function getAdsApiProvider()
+    {
+        $apiKey = $this->helper->getApiKey();
+        $apiUrl = $this->helper->getApiUrl();
+        return new \Topsort\SDK('magento-marketplace', $apiKey, str_replace('.api.', '.app.', $apiUrl));
     }
 
     /**

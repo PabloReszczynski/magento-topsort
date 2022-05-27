@@ -5,10 +5,20 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Magento\Elasticsearch\Model\ResourceModel\Fulltext\Collection\SearchResultApplier" type="Topsort\Integration\Model\ResourceModel\Fulltext\Collection\SearchResultApplier"/>
     <type name="Magento\Catalog\Block\Product\ImageFactory">
         <plugin name="topsort_image_factory_plugin" type="Topsort\Integration\Plugin\Block\Product\ImageFactory" />
     </type>
     <type name="Magento\Catalog\Model\Product\Url">
         <plugin name="topsort_product_plugin" type="Topsort\Integration\Plugin\Product\Url" />
+    </type>
+    <type name="\Magento\Catalog\Controller\Category\View">
+        <plugin name="topsort_category_view_controller_plugin" type="Topsort\Integration\Plugin\Controller\Category\View" />
+    </type>
+    <type name="\Magento\CatalogSearch\Controller\Result\Index">
+        <plugin name="topsort_category_search_result_controller_plugin" type="Topsort\Integration\Plugin\Controller\Result\Index" />
+    </type>
+    <type name="\Magento\Catalog\Model\ResourceModel\Product\Collection">
+        <plugin name="topsort_products_collection_plugin" type="Topsort\Integration\Plugin\ResourceModel\Product\Collection"/>
     </type>
 </config>

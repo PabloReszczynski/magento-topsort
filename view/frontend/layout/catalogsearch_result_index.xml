@@ -7,7 +7,14 @@
     </head>
     <body>
         <referenceContainer name="content">
-            <block class="Magento\Framework\View\Element\Text" name="category.products.list.non-cacheable" cacheable="false" ttl="0" />
+            <block class="Topsort\Integration\Block\PromotedProductsLoader" name="topsort.promoted-products-loader"
+                   template="Topsort_Integration::topsort/promoted_products_loader.phtml"/>
         </referenceContainer>
+        <referenceBlock name="search_result_list">
+            <container name="additional" label="Additional Info" after="product_list_toolbar">
+                <block class="Topsort\Integration\Block\Tracking\Impressions\SearchPage" name="topsort.product-impressions-tracking"
+                       template="Topsort_Integration::topsort/impressions_tracking.phtml"/>
+            </container>
+        </referenceBlock>
     </body>
 </page>

@@ -6,14 +6,14 @@
  * @author Kyrylo Kostiukov <kyrylo.kostiukov@bimproject.net>
  * @license OSL-3.0
  */
-namespace Topsort\Integration\Controller\Product;
+namespace Topsort\Integration\Controller\Tracking;
 
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\ResultFactory;
 use Topsort\Integration\Model\Api;
 use Topsort\Integration\Model\RefererUrl;
 
-class Tracking extends \Magento\Framework\App\Action\Action
+class Impressions extends \Magento\Framework\App\Action\Action
 {
 
     /**
@@ -25,26 +25,26 @@ class Tracking extends \Magento\Framework\App\Action\Action
      */
     private $refererUrl;
     /**
-     * @var \Magento\Catalog\Api\ProductRepositoryInterface
-     */
-    private $productRepository;
-    /**
      * @var \Psr\Log\LoggerInterface
      */
     private $logger;
+    /**
+     * @var \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory
+     */
+    private $collectionFactory;
 
     function __construct(
         Api $topsortApi,
         RefererUrl $refererUrl,
         \Psr\Log\LoggerInterface $logger,
-        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
+        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $collectionFactory,
         Context $context
     )
     {
         $this->topsortApi = $topsortApi;
         $this->refererUrl = $refererUrl;
-        $this->productRepository = $productRepository;
         $this->logger = $logger;
+        $this->collectionFactory = $collectionFactory;
         parent::__construct($context);
     }
 
@@ -53,26 +53,25 @@ class Tracking extends \Magento\Framework\App\Action\Action
      */
     public function execute()
     {
-        $referrerUrl = $this->getRequest()->getParam('referrer');
-        $refererRouteData = $this->refererUrl->getRefererRouteData($referrerUrl);
-
         $request = $this->getRequest();
-        $productId = $request->getParam('id');
+        $productIds = explode(',', $request->getParam('ids'));
+        $page = $request->getParam('page');
 
-        try {
-            $product = $this->productRepository->getById($productId);
-        } catch (\Exception $e) {
-            // product was not found: log error and do nothing
-            $this->logger->critical($e);
-            return;
+        /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $collection */
+        $collection = $this->collectionFactory->create();
+        $collection->addFieldToFilter('entity_id', ['in' => $productIds]);
+
+        $impressions = [];
+        foreach ($collection as $product) {
+            $impressions[$product->getSku()] = [
+                'product_id' => $product->getId(),
+                'sku' => $product->getSku()
+            ];
         }
-        $auctionId = $request->getParam('auction_id', null);
 
-        $apiCallResult = $this->topsortApi->trackProductClick(
-            empty($refererRouteData['url_path']) ? 'unknown' : $refererRouteData['url_path'],
-            1,
-            $product->getSku(),
-            $auctionId
+        $apiCallResult = $this->topsortApi->trackImpressions(
+            $page,
+            $impressions
         );
 
         /** @var \Magento\Framework\Controller\Result\Json $result */

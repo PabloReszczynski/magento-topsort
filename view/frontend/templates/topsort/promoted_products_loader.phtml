@@ -1,0 +1,18 @@
+<?php
+/** @var \Topsort\Integration\Block\PromotedProductsLoader $block */
+?>
+<div id="promoted-products-component" style="display: none"></div>
+<script type="text/x-magento-init">
+    {
+        "#promoted-products-component": {
+            "Topsort_Integration/js/promoted-products": {
+                "loaderIcon": "<?= $block->getLoaderIconUrl() ?>",
+                "loadPromotionsUrl": "<?= $block->getLoadPromotionsUrl() ?>",
+                "loaderMaskContainer": "<?= $block->getLoaderMaskContainerSelector() ?>",
+                "productsContainer": "<?= $block->getProductsContainerSelector() ?>",
+                "toolbarSelector": "<?= $block->getToolbarSelector() ?>",
+                "productsLimit": "<?= $block->getProductsLimit() ?>"
+            }
+        }
+    }
+</script>
