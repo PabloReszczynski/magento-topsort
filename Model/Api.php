@@ -46,39 +46,22 @@ class Api
         $this->jsonHelper = $jsonHelper;
     }
 
-    function getSponsoredBanners($placement, $productSkuValues = [])
+    function getSponsoredBanners($bannerData)
     {
         if (!$this->helper->getIsEnabled()) {
             return [];
         }
         $sdk = $this->getProvider();
 
-        $products = [];
-        foreach ($productSkuValues as $productId) {
-            $products[] = ['productId' => $productId];
-        }
-
         try {
-            if ($placement === 'Category-page' && self::$bannerAdsData !== null) {
-                // use cached result from promoted products request
-                $result = ['slots' => ['bannerAds' => self::$bannerAdsData]];
+            $result = $sdk->create_banner_auction(
+                [
+                    'slots' => 1,
+                    'aspectRatio' => $bannerData['aspectRatio'],
+                ],
+            )->wait();
 
-                $this->logger->debug("TOPSORT: Banners are taken from cache.");
-            } else {
-                $result = $sdk->create_auction(
-                    [
-                        'listings' => 1,
-                        'bannerAds' => 1
-                    ],
-                    $products,
-                    $this->getSessionData(),
-                    [
-                        'placement' => $placement
-                    ]
-                )->wait();
-
-                $this->logger->debug("TOPSORT: Banner Auction.\nRequest products count: " . count($products) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
-            }
+            $this->logger->debug("TOPSORT: Banner Auction.\nRequest products count: " . count($products) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
 
         } catch (TopsortException $e) {
             $prevException = $e->getPrevious();
@@ -93,20 +76,19 @@ class Api
             return [];
         }
         $winnersList = [];
-        $auctionId = null;
-        if (isset($result['slots']['bannerAds']['winners'], $result['slots']['bannerAds']['auctionId'])) {
-            foreach ($result['slots']['bannerAds']['winners'] as $winner) {
-                if (isset($winner['rank']) && isset($winner['productId'])) {
-                    $winnersList[$winner['rank']] = [
-                        'sku' => $winner['productId'] ?? $winner['winnerId'] ?? '',
-                        'url' => $winner['assetUrl'] ?? '#',
-                        'winnerType' => $winner['winnerType'] ?? '',
-                        'winnerId' => $winner['winnerId'] ?? '',
-                        // $winner['resolvedBidId'] not used
-                    ];
-                }
+        if (isset($result['results'][0]['winners'])) {
+          foreach ($result['results'][0]['winners'] as $winner) {
+            if (isset($winner['rank']) && isset($winner['resolvedBidId'])) {
+              $winnerList[$winner['rank']] = [
+                'sku' => $winner['id'],
+                'url' => $winner['asset']['url'] ?? '#',
+                'winnerType' => $winner['type'] ?? 'product',
+                'winnerId' => $winner['id'],
+                'resolvedBidId' => $winner['resolvedBidId'],
+              ];
             }
-            $auctionId = $result['slots']['bannerAds']['auctionId'];
+          }
+          $auctionId = $result['results'][0]['winners'][0]['resolvedBidId'];
         }
 
         return [
@@ -168,10 +150,6 @@ class Api
             $auctionId = $result['slots']['listings']['auctionId'];
         }
 
-        if ($preloadBannerData) {
-            // let bannerAds be reused later during the next getBanners() call
-            self::$bannerAdsData = isset($result['slots']['bannerAds']) ? $result['slots']['bannerAds'] : [];
-        }
         return [
             'products' => $winnersList,
             'auction_id' => $auctionId
@@ -202,6 +180,9 @@ class Api
                 }
                 if (isset($impression['id'])) {
                     $apiImpression['id'] = $impression['id'];
+                }
+                if (isset($impression['resolvedBidId'])) {
+                    $apiImpression['resolvedBidId'] = $impression['resolvedBidId'];
                 }
                 $apiImpressions[] = $apiImpression;
             }
@@ -304,12 +285,12 @@ class Api
         }
         try {
             $data = [
-                'session' => $this->getSessionData(),
                 'placement' => [
                     'page' => $page,
                     'location' => 'position_' . intval($position)
                 ],
-                'productId' => $productSku
+                'productId' => $productSku,
+                'resolvedBidId' => $resolvedBidId,
             ];
             if (!empty($auctionId)) {
                 $data['auctionId'] = $auctionId;

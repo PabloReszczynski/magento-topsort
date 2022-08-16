@@ -55,7 +55,7 @@ class BannerHelper extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $data = $this->collection->getBannerDataById($bannerId);
         // get banner url from API
-        $bannersFromApi = $this->api->getSponsoredBanners($data['placement']);
+        $bannersFromApi = $this->api->getSponsoredBanners($data);
         if (empty($bannersFromApi['banners'])) {
             return false;
         }

@@ -40,6 +40,8 @@ class Collection extends \Magento\Framework\Data\Collection
      */
     public function loadData($printQuery = false, $logQuery = false)
     {
+        // TODO: Get Banner ad locations from DB
+
         if (empty($this->_items)) {
             $bannerAds = $this->api->getBannerAdLocations();
             $items = [];
@@ -58,11 +60,24 @@ class Collection extends \Magento\Framework\Data\Collection
         $placement = $data[0] ?? 'unknown';
         $dimensions = $data[1] ?? 'unknown';
         $dimensionsArray = explode('x', $dimensions);
+
+        $width = intval($dimensionsArray[0] ?? 1);
+        $height = intval($dimensionsArray[1] ?? 1);
+
+        if ($width == $height) {
+          $aspectRatio = '1:1';
+        } else {
+          $gcd = gmp_gcd($width, $height);
+          $numerator = intdiv($width, $gcd);
+          $denominator = intdiv($height, $gcd);
+          $aspectRatio = '' . $numerator . ':' . $denominator;
+        }
         return [
             'id' => $bannerId,
             'placement' => $placement,
-            'width' => intval($dimensionsArray[0] ?? 0),
-            'height' => intval($dimensionsArray[1] ?? 0)
+            'width' => width,
+            'height' => height,
+            'aspectRatio' => $aspectRatio,
         ];
     }
 
