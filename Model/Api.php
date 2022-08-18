@@ -91,6 +91,8 @@ class Api
             $auctionId = $result['results'][0]['winners'][0]['resolvedBidId'];
         }
 
+        $this->logger->info("TOPSORT Banner result:" . json_encode($winnerList));
+
         return [
             'banners' => $winnersList,
             'auction_id' => $auctionId
