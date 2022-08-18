@@ -325,7 +325,7 @@ class Api
         try {
             $sdk = $this->getAdsApiProvider();
             $result = $sdk->get_ad_locations()->wait();
-            $this->logger->info('AD_LOCATIONS:' . $this->jsonHelper->jsonEncode($result))
+            $this->logger->info('AD_LOCATIONS:' . $this->jsonHelper->jsonEncode($result));
             $bannerAds = [];
             foreach (($result['bannerAds'] ?? []) as $bannerAd) {
                 $bannerAds[] = [
