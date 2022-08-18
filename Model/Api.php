@@ -344,6 +344,7 @@ class Api
             $this->logger->critical($e->getPrevious());
             return [];
         } catch (\Exception $e) {
+            $this->logger->critical('Something happened: ' . $e->getMessage());
             $this->logger->critical($e->getPrevious());
             return [];
         }
