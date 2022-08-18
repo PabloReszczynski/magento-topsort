@@ -71,11 +71,13 @@ class BannerHelper extends \Magento\Framework\App\Helper\AbstractHelper
         $data['image_url'] = $auctionBannerData['url'];
 
         $promoted_url = "#";
-        if ($data['winnerType'] == 'product') {
+        if ($auctionBannerData['winnerType'] == 'product') {
             $product = $this->productRepository->get($auctionBannerData['sku']);
             if (!$product->isObjectNew()) {
                 $promoted_url = $product->getProductUrl() . '?auctionId=' . $bannersFromApi['auction_id'];
             }
+        } else {
+            // TODO: handle vendor url
         }
 
         $data['promoted_url'] = $promoted_url;
