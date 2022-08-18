@@ -43,16 +43,14 @@ class BannerHelper extends \Magento\Framework\App\Helper\AbstractHelper
         $bannerData = $this->getBannerData($bannerId);
         $html = '';
         if ($bannerData !== false) {
-            $html =  '<div style="display: flex; justify-content: center">'
-                . '<a href="'
+            $html = '<a href="'
                 . $bannerData['promoted_url']
                 . '"><img crossorigin="" style="width: ' . intval($bannerData['width'])
                 . 'px; height: ' . intval($bannerData['height'])
                 . 'px" width="' . $bannerData['width']
                 . '" height="' . $bannerData['height']
                 . '" alt="" src="' . $bannerData['image_url']
-                . '"/></a>'
-                . '</div>';
+                . '"/></a>';
         } else {
             // TODO what to show if no banners returned?
             // $html = '<p>NO DATA: <pre>' . json_encode($bannerData) . '</pre></p>';
