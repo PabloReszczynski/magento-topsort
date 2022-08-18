@@ -79,13 +79,13 @@ class Api
         if (isset($result['results'][0]['winners'])) {
             foreach ($result['results'][0]['winners'] as $winner) {
                 if (isset($winner['rank']) && isset($winner['resolvedBidId'])) {
-                    $winnerList[$winner['rank']] = [
-                'sku' => $winner['id'],
-                'url' => $winner['asset']['url'] ?? '#',
-                'winnerType' => $winner['type'] ?? 'product',
-                'winnerId' => $winner['id'],
-                'resolvedBidId' => $winner['resolvedBidId'],
-              ];
+                    $winnerList[intval($winner['rank'] - 1)] = [
+                        'sku' => $winner['id'],
+                        'url' => $winner['asset'][0]['url'] ?? '#',
+                        'winnerType' => $winner['type'] ?? 'product',
+                        'winnerId' => $winner['id'],
+                        'resolvedBidId' => $winner['resolvedBidId'],
+                    ];
                 }
             }
             $auctionId = $result['results'][0]['winners'][0]['resolvedBidId'];
