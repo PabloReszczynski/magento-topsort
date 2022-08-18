@@ -74,7 +74,7 @@ class BannerHelper extends \Magento\Framework\App\Helper\AbstractHelper
 
         if ($product->isObjectNew()) {
             // product not found
-            return false;
+            $data['promoted_url'] = '#';
         }
 
         $data['promoted_url'] = $product->getProductUrl() . '?auctionId=' . $bannersFromApi['auction_id'];
