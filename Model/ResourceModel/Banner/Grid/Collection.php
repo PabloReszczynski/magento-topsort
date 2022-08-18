@@ -44,7 +44,6 @@ class Collection extends \Magento\Framework\Data\Collection
         // TODO: Get Banner ad locations from DB
 
         if (empty($this->_items)) {
-            $this->logger->info("TOPSORT: Getting Ad Locations");
             $bannerAds = $this->api->getBannerAdLocations();
             $items = [];
             foreach ($bannerAds as $bannerAd) {
