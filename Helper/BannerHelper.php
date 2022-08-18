@@ -77,7 +77,7 @@ class BannerHelper extends \Magento\Framework\App\Helper\AbstractHelper
                 $promoted_url = $product->getProductUrl() . '?auctionId=' . $bannersFromApi['auction_id'];
             }
         } else {
-            // TODO: handle vendor url
+            $promoted_url = 'men/tops-men/jackets-men.html';
         }
 
         $data['promoted_url'] = $promoted_url;
