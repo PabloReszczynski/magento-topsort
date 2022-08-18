@@ -53,7 +53,7 @@ class BannerHelper extends \Magento\Framework\App\Helper\AbstractHelper
                 . '</div>';
         } else {
             // TODO what to show if no banners returned?
-            $html = '<p>NO DATA</p>';
+            $html = '<p>NO DATA: <pre>' . json_encode($bannerData) . '</pre></p>';
         }
         return $html;
     }
