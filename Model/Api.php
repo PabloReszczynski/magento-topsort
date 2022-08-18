@@ -54,6 +54,7 @@ class Api
         $sdk = $this->getProvider();
 
         try {
+            $this->logger->info("TOPSORT: Running Banner Auction. aspectRatio=" . $bannerData['aspectRatio']);
             $result = $sdk->create_banner_auction(
                 [
                     'slots' => 1,
