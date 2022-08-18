@@ -75,7 +75,7 @@ class Api
             $this->logger->critical($e->getPrevious());
             return [];
         }
-        $winnersList = [];
+        $winnerList = [];
         if (isset($result['results'][0]['winners'])) {
             foreach ($result['results'][0]['winners'] as $winner) {
                 if (isset($winner['rank']) && isset($winner['resolvedBidId'])) {
@@ -94,7 +94,7 @@ class Api
         $this->logger->info("TOPSORT Banner result:" . json_encode($winnerList));
 
         return [
-            'banners' => $winnersList,
+            'banners' => $winnerList,
             'auction_id' => $auctionId
         ];
     }
