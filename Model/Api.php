@@ -321,6 +321,7 @@ class Api
     public function getBannerAdLocations()
     {
         try {
+            $this->logger->info('Getting ad_locations');
             $sdk = $this->getAdsApiProvider();
             $result = $sdk->get_ad_locations()->wait();
             $this->logger->info('AD_LOCATIONS:' . $this->jsonHelper->jsonEncode($result));
@@ -334,11 +335,11 @@ class Api
             }
             return $bannerAds;
         } catch (TopsortException $e) {
+            $this->logger->critical('Something happened: ' . $e->getMessage());
             $prevException = $e->getPrevious();
             if ($prevException && $prevException instanceof ClientException) {
-                $this->logger->critical("Something happened:");
                 $this->logger->critical($prevException);
-                $this->logger->critical('TOPSORT_RESPONSE:' . (string)$prevException->getResponse()->getBody());
+                $this->logger->critical('TOPSORT_RESPONSE: ' . (string)$prevException->getResponse()->getBody());
             }
             $this->logger->critical($e->getPrevious());
             return [];
