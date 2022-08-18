@@ -6,6 +6,7 @@
  * @author Kyrylo Kostiukov <kyrylo.kostiukov@bimproject.net>
  * @license OSL-3.0
  */
+
 namespace Topsort\Integration\Model;
 
 use GuzzleHttp\Exception\ClientException;
@@ -31,22 +32,21 @@ class Api
      */
     private $jsonHelper;
 
-    static private $bannerAdsData = null;
+    private static $bannerAdsData = null;
 
-    function __construct(
+    public function __construct(
         \Topsort\Integration\Helper\Data $helper,
         \Magento\Framework\Json\Helper\Data $jsonHelper,
         \Magento\Customer\Model\Session $customerSession,
         \Psr\Log\LoggerInterface $logger
-    )
-    {
+    ) {
         $this->helper = $helper;
         $this->customerSession = $customerSession;
         $this->logger = $logger;
         $this->jsonHelper = $jsonHelper;
     }
 
-    function getSponsoredBanners($bannerData)
+    public function getSponsoredBanners($bannerData)
     {
         if (!$this->helper->getIsEnabled()) {
             return [];
@@ -62,7 +62,6 @@ class Api
             )->wait();
 
             $this->logger->debug("TOPSORT: Banner Auction.\nRequest products count: " . count($products) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
-
         } catch (TopsortException $e) {
             $prevException = $e->getPrevious();
             if ($prevException && $prevException instanceof ClientException) {
@@ -77,18 +76,18 @@ class Api
         }
         $winnersList = [];
         if (isset($result['results'][0]['winners'])) {
-          foreach ($result['results'][0]['winners'] as $winner) {
-            if (isset($winner['rank']) && isset($winner['resolvedBidId'])) {
-              $winnerList[$winner['rank']] = [
+            foreach ($result['results'][0]['winners'] as $winner) {
+                if (isset($winner['rank']) && isset($winner['resolvedBidId'])) {
+                    $winnerList[$winner['rank']] = [
                 'sku' => $winner['id'],
                 'url' => $winner['asset']['url'] ?? '#',
                 'winnerType' => $winner['type'] ?? 'product',
                 'winnerId' => $winner['id'],
                 'resolvedBidId' => $winner['resolvedBidId'],
               ];
+                }
             }
-          }
-          $auctionId = $result['results'][0]['winners'][0]['resolvedBidId'];
+            $auctionId = $result['results'][0]['winners'][0]['resolvedBidId'];
         }
 
         return [
@@ -97,7 +96,7 @@ class Api
         ];
     }
 
-    function getSponsoredProducts($productSkuValues, $promotedProductsCount, $preloadBannerData = false)
+    public function getSponsoredProducts($productSkuValues, $promotedProductsCount, $preloadBannerData = false)
     {
         if (!$this->helper->getIsEnabled()) {
             return [];
@@ -125,7 +124,6 @@ class Api
                 $bannerOptions
             )->wait();
             $this->logger->debug("TOPSORT: Auction.\nRequest products count: " . count($products) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
-
         } catch (TopsortException $e) {
             $prevException = $e->getPrevious();
 
@@ -156,7 +154,7 @@ class Api
         ];
     }
 
-    function trackImpressions($page, $impressions)
+    public function trackImpressions($page, $impressions)
     {
         if (empty($impressions) || !$this->helper->getIsEnabled()) {
             return [];
@@ -220,7 +218,7 @@ class Api
         }
     }
 
-    function trackPurchase($orderNumber, $quoteId, $items)
+    public function trackPurchase($orderNumber, $quoteId, $items)
     {
         if (!$this->helper->getIsEnabled()) {
             return [];
@@ -338,6 +336,7 @@ class Api
         } catch (TopsortException $e) {
             $prevException = $e->getPrevious();
             if ($prevException && $prevException instanceof ClientException) {
+                $this->logger->critical("Something happened:");
                 $this->logger->critical($prevException);
                 $this->logger->critical('TOPSORT_RESPONSE:' . (string)$prevException->getResponse()->getBody());
             }

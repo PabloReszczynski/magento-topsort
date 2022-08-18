@@ -6,6 +6,7 @@
  * @author Kyrylo Kostiukov <kyrylo.kostiukov@bimproject.net>
  * @license OSL-3.0
  */
+
 namespace Topsort\Integration\Model\ResourceModel\Banner\Grid;
 
 use Magento\Framework\Data\Collection\EntityFactoryInterface;
@@ -22,10 +23,10 @@ class Collection extends \Magento\Framework\Data\Collection
      */
     private $api;
 
-    function __construct(
+    public function __construct(
         EntityFactoryInterface $entityFactory,
-        Api $api)
-    {
+        Api $api
+    ) {
         $this->api = $api;
         parent::__construct($entityFactory);
     }
@@ -43,6 +44,7 @@ class Collection extends \Magento\Framework\Data\Collection
         // TODO: Get Banner ad locations from DB
 
         if (empty($this->_items)) {
+            $this->logger->info("TOPSORT: Getting Ad Locations");
             $bannerAds = $this->api->getBannerAdLocations();
             $items = [];
             foreach ($bannerAds as $bannerAd) {
@@ -54,7 +56,7 @@ class Collection extends \Magento\Framework\Data\Collection
         return $this;
     }
 
-    function getBannerDataById($bannerId)
+    public function getBannerDataById($bannerId)
     {
         $data = explode('|', base64_decode($bannerId));
         $placement = $data[0] ?? 'unknown';
@@ -65,12 +67,12 @@ class Collection extends \Magento\Framework\Data\Collection
         $height = intval($dimensionsArray[1] ?? 1);
 
         if ($width == $height) {
-          $aspectRatio = '1:1';
+            $aspectRatio = '1:1';
         } else {
-          $gcd = gmp_gcd($width, $height);
-          $numerator = intdiv($width, $gcd);
-          $denominator = intdiv($height, $gcd);
-          $aspectRatio = '' . $numerator . ':' . $denominator;
+            $gcd = gmp_gcd($width, $height);
+            $numerator = intdiv($width, $gcd);
+            $denominator = intdiv($height, $gcd);
+            $aspectRatio = '' . $numerator . ':' . $denominator;
         }
         return [
             'id' => $bannerId,
@@ -81,7 +83,7 @@ class Collection extends \Magento\Framework\Data\Collection
         ];
     }
 
-    function getBannerIdForData($placement, $width, $height)
+    public function getBannerIdForData($placement, $width, $height)
     {
         return base64_encode($placement . '|' . $width . 'x' . $height);
     }
