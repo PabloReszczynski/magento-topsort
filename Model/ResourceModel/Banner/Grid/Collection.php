@@ -75,8 +75,8 @@ class Collection extends \Magento\Framework\Data\Collection
         return [
             'id' => $bannerId,
             'placement' => $placement,
-            'width' => width,
-            'height' => height,
+            'width' => $width,
+            'height' => $height,
             'aspectRatio' => $aspectRatio,
         ];
     }
