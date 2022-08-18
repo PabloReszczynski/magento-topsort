@@ -68,7 +68,7 @@ class Collection extends \Magento\Framework\Data\Collection
         if ($width == $height) {
             $aspectRatio = '1:1';
         } else {
-            $gcd = gmp_gcd($width, $height);
+            $gcd = gmp_intval(gmp_gcd($width, $height));
             $numerator = intdiv($width, $gcd);
             $denominator = intdiv($height, $gcd);
             $aspectRatio = '' . $numerator . ':' . $denominator;
