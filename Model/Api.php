@@ -64,6 +64,7 @@ class Api
 
             $this->logger->debug("TOPSORT: Banner Auction.\nRequest products count: " . count($products) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
         } catch (TopsortException $e) {
+            $this->logger->critical("Exception: " . $e->getMessage());
             $prevException = $e->getPrevious();
             if ($prevException && $prevException instanceof ClientException) {
                 $this->logger->critical($prevException);
@@ -72,6 +73,7 @@ class Api
             $this->logger->critical($e->getPrevious());
             return [];
         } catch (\Exception $e) {
+            $this->logger->critical("Exception: " . $e->getMessage());
             $this->logger->critical($e->getPrevious());
             return [];
         }
