@@ -61,8 +61,6 @@ class Api
                     'aspectRatio' => $bannerData['aspectRatio'],
                 ],
             )->wait();
-
-            $this->logger->debug("TOPSORT: Banner Auction.\nRequest products count: " . count($products) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
         } catch (TopsortException $e) {
             $this->logger->critical("Exception: " . $e->getMessage());
             $prevException = $e->getPrevious();
