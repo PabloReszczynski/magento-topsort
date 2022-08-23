@@ -4,7 +4,7 @@
         <css src="Topsort_Integration::css/topsort.css"/>
     </head>
     <body>
-        <referenceContainer name="content">
+        <referenceBlock name="search_banner">
             <block class="Topsort\Integration\Block\Banner" name="search-banner" before="search_result_list">
                 <arguments>
                     <argument name="banner_id" xsi:type="string">U2VhcmNofDEyMDB4MTAwMA==</argument>
@@ -13,6 +13,8 @@
                     <argument name="placement" xsi:type="string">Search</argument>
                 </arguments>
             </block>
+        </referenceBlock>
+        <referenceContainer name="content">
             <block class="Topsort\Integration\Block\PromotedProductsLoader" name="topsort.promoted-products-loader" template="Topsort_Integration::topsort/promoted_products_loader.phtml" />
         </referenceContainer>
         <referenceBlock name="search_result_list">
