@@ -1,25 +1,19 @@
 <?xml version="1.0"?>
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      layout="2columns-left"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
         <css src="Topsort_Integration::css/topsort.css"/>
     </head>
     <body>
-        <referenceBlock name="search_banner">
-            <block class="Topsort\Integration\Block\Banner" name="search-banner" before="product_list_toolbar">
-                <arguments>
-                    <argument name="banner_id" xsi:type="string">U2VhcmNofDEyMDB4MTAwMA==</argument>
-                    <argument name="width" xsi:type="string">1200</argument>
-                    <argument name="height" xsi:type="string">1000</argument>
-                    <argument name="placement" xsi:type="string">Search</argument>
-                </arguments>
-            </block>
-        </referenceBlock>
         <referenceContainer name="content">
-            <block class="Topsort\Integration\Block\PromotedProductsLoader" name="topsort.promoted-products-loader" template="Topsort_Integration::topsort/promoted_products_loader.phtml" />
+            <block class="Topsort\Integration\Block\PromotedProductsLoader" name="topsort.promoted-products-loader"
+                   template="Topsort_Integration::topsort/promoted_products_loader.phtml"/>
         </referenceContainer>
         <referenceBlock name="search_result_list">
             <container name="additional" label="Additional Info" after="product_list_toolbar">
-                <block class="Topsort\Integration\Block\Tracking\Impressions\SearchPage" name="topsort.product-impressions-tracking" template="Topsort_Integration::topsort/impressions_tracking.phtml"/>
+                <block class="Topsort\Integration\Block\Tracking\Impressions\SearchPage" name="topsort.product-impressions-tracking"
+                       template="Topsort_Integration::topsort/impressions_tracking.phtml"/>
             </container>
         </referenceBlock>
     </body>
