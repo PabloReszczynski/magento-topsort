@@ -178,12 +178,10 @@ define([
                 } else {
                     // load banner for Home-page/Search-page
                     var params = new URLSearchParams(window.location.search);
-                    var url = urlBuilder.build("topsort/banner/content/id/" + config.bannerId);
+                    var url = window.location.origin + "/topsort/banner/content/id/" + config.bannerId;
                     if (params.has("q")) {
                         url += "?search=" + params.get("q");
                     }
-                    console.log("pumba");
-                    console.log({url, params});
                     $.ajax({
                         url: url,
                         type: 'GET',
@@ -193,7 +191,6 @@ define([
                     }).done(function (data) {
                         if (data.error) {
                             if (window.console && window.console.error) {
-                                console.error({url, params});
                                 console.error(data.error);
                             }
                         } else {
