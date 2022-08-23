@@ -38,9 +38,9 @@ class BannerHelper extends \Magento\Framework\App\Helper\AbstractHelper
         parent::__construct($context);
     }
 
-    public function getBannerHtml($bannerId)
+    public function getBannerHtml($bannerId, $searchQuery)
     {
-        $bannerData = $this->getBannerData($bannerId);
+        $bannerData = $this->getBannerData($bannerId, $searchQuery);
         $html = '';
         if ($bannerData !== false) {
             $html = '<a href="'
@@ -58,10 +58,13 @@ class BannerHelper extends \Magento\Framework\App\Helper\AbstractHelper
         return $html;
     }
 
-    private function getBannerData($bannerId)
+    private function getBannerData($bannerId, $searchQuery)
     {
         $data = $this->collection->getBannerDataById($bannerId);
         // get banner url from API
+        if (!empty($searchQuery)) {
+            $bannersFromApi["searchQuery"] = $searchQuery;
+        }
         $bannersFromApi = $this->api->getSponsoredBanners($data);
         if (empty($bannersFromApi['banners'])) {
             return false;

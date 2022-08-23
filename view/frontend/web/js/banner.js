@@ -176,9 +176,15 @@ define([
                     );
 
                 } else {
-                    // load banner for Home-page
+                    // load banner for Home-page/Search-page
+                    var params = new URLSearchParams(window.location.search);
+                    var url = "topsort/banner/content/id/" + config.bannerId;
+                    if (params.has("q")) {
+                        url += "?search=" + params.get("q");
+                    }
+                    console.log(url);
                     $.ajax({
-                        url:  urlBuilder.build("topsort/banner/content/id/" + config.bannerId),
+                        url:  urlBuilder.build(url),
                         type: 'GET',
                         async: true,
                         data: {},

@@ -55,12 +55,11 @@ class Api
 
         try {
             $this->logger->info("TOPSORT: Running Banner Auction. aspectRatio=" . $bannerData['aspectRatio']);
-            $result = $sdk->create_banner_auction(
-                [
-                    'slots' => 1,
-                    'aspectRatio' => $bannerData['aspectRatio'],
-                ],
-            )->wait();
+            $data = ['slots' => 1, 'aspectRatio' => $bannerData['aspectRatio']];
+            if (!empty($bannerData["searchQuery"])) {
+                $data["searchQuery"] = $bannerData["searchQuery"];
+            }
+            $result = $sdk->create_banner_auction($data)->wait();
         } catch (TopsortException $e) {
             $this->logger->critical("Exception: " . $e->getMessage());
             $prevException = $e->getPrevious();

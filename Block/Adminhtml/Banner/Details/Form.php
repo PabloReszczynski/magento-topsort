@@ -6,6 +6,7 @@
  * @author Kyrylo Kostiukov <kyrylo.kostiukov@bimproject.net>
  * @license OSL-3.0
  */
+
 namespace Topsort\Integration\Block\Adminhtml\Banner\Details;
 
 class Form extends \Magento\Backend\Block\Widget\Form\Generic
@@ -15,14 +16,13 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
      */
     private $collection;
 
-    function __construct(
+    public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Framework\Registry $registry,
         \Magento\Framework\Data\FormFactory $formFactory,
         \Topsort\Integration\Model\ResourceModel\Banner\Grid\Collection $collection,
         array $data = []
-    )
-    {
+    ) {
         $this->collection = $collection;
         parent::__construct($context, $registry, $formFactory, $data);
     }

@@ -6,9 +6,16 @@
         <css src="Topsort_Integration::css/topsort.css"/>
     </head>
     <body>
-        <referenceContainer name="content">
-            <block class="Topsort\Integration\Block\PromotedProductsLoader" name="topsort.promoted-products-loader"
-                   template="Topsort_Integration::topsort/promoted_products_loader.phtml"/>
+        <block 
+          class="Topsort\Integration\Block\Banner" 
+          banner_id="U2VhcmNofDEyMDB4MTAwMA==" 
+          width="1200" 
+          height="1000" 
+          placement="Search"/>
+        <block 
+          class="Topsort\Integration\Block\PromotedProductsLoader" 
+          name="topsort.promoted-products-loader"
+          template="Topsort_Integration::topsort/promoted_products_loader.phtml"/>
         </referenceContainer>
         <referenceBlock name="search_result_list">
             <container name="additional" label="Additional Info" after="product_list_toolbar">

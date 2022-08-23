@@ -6,6 +6,7 @@
  * @author Kyrylo Kostiukov <kyrylo.kostiukov@bimproject.net>
  * @license OSL-3.0
  */
+
 namespace Topsort\Integration\Controller\Banner;
 
 use Magento\Framework\Controller\ResultFactory;
@@ -17,11 +18,10 @@ class Content extends \Magento\Framework\App\Action\Action
      */
     private $bannerHelper;
 
-    function __construct(
+    public function __construct(
         \Topsort\Integration\Helper\BannerHelper $bannerHelper,
         \Magento\Framework\App\Action\Context $context
-    )
-    {
+    ) {
         $this->bannerHelper = $bannerHelper;
         parent::__construct($context);
     }
@@ -33,8 +33,9 @@ class Content extends \Magento\Framework\App\Action\Action
     {
         $request = $this->getRequest();
         $bannerId = $request->getParam('id');
+        $searchQuery = $request->getParam('search');
 
-        $resultData['html'] = $this->bannerHelper->getBannerHtml($bannerId);
+        $resultData['html'] = $this->bannerHelper->getBannerHtml($bannerId, $searchQuery);
 
         /** @var \Magento\Framework\Controller\Result\Json $result */
         $result = $this->resultFactory->create(ResultFactory::TYPE_JSON);
