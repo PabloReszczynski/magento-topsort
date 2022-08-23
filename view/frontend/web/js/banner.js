@@ -193,6 +193,7 @@ define([
                     }).done(function (data) {
                         if (data.error) {
                             if (window.console && window.console.error) {
+                                console.error({url, params});
                                 console.error(data.error);
                             }
                         } else {
