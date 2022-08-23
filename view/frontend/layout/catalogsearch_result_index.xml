@@ -5,7 +5,7 @@
     </head>
     <body>
         <referenceContainer name="content">
-            <block class="Topsort\Integration\Block\Banner" name="search-banner">
+            <block class="Topsort\Integration\Block\Banner" name="search-banner" before="search_result_list">
                 <arguments>
                     <argument name="banner_id" xsi:type="string">U2VhcmNofDEyMDB4MTAwMA==</argument>
                     <argument name="width" xsi:type="string">1200</argument>
