@@ -182,7 +182,8 @@ define([
                     if (params.has("q")) {
                         url += "?search=" + params.get("q");
                     }
-                    console.log(url);
+                    console.log("pumba");
+                    console.log({url, params});
                     $.ajax({
                         url: url,
                         type: 'GET',
