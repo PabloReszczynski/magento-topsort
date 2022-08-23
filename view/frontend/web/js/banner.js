@@ -178,13 +178,13 @@ define([
                 } else {
                     // load banner for Home-page/Search-page
                     var params = new URLSearchParams(window.location.search);
-                    var url = "topsort/banner/content/id/" + config.bannerId;
+                    var url = urlBuilder.build("topsort/banner/content/id/" + config.bannerId);
                     if (params.has("q")) {
                         url += "?search=" + params.get("q");
                     }
                     console.log(url);
                     $.ajax({
-                        url:  urlBuilder.build(url),
+                        url: url,
                         type: 'GET',
                         async: true,
                         data: {},
