@@ -74,9 +74,11 @@ class Api
             $this->logger->critical($e->getPrevious());
             return [];
         }
+        $this->logger->info("TOPSORT: Results" . json_encode($results));
         $winnerList = [];
         if (isset($result['results'][0]['winners'])) {
-            foreach ($result['results'][0]['winners'] as $winner) {
+            $winners = $result['results'][0]['winners'];
+            foreach ($winners as $winner) {
                 if (isset($winner['rank']) && isset($winner['resolvedBidId'])) {
                     $winnerList[intval($winner['rank'] - 1)] = [
                         'sku' => $winner['id'],
@@ -87,7 +89,11 @@ class Api
                     ];
                 }
             }
-            $auctionId = $result['results'][0]['winners'][0]['resolvedBidId'];
+            if (isset($winners[0]) && isset($winners[0]['resolvedBidId'])) {
+                $auctionId = $result['results'][0]['winners'][0]['resolvedBidId'];
+            } else {
+                $auctiond = "";
+            }
         }
 
         $this->logger->info("TOPSORT Banner result:" . json_encode($winnerList));
