@@ -45,9 +45,8 @@ class BannerHelper extends \Magento\Framework\App\Helper\AbstractHelper
         if ($bannerData !== false) {
             $html = '<a href="'
                 . $bannerData['promoted_url']
-                . '"><img crossorigin="" style="width: ' . intval($bannerData['width'])
-                . 'px; height: ' . intval($bannerData['height'])
-                . 'px" width="' . $bannerData['width']
+                . '"><img crossorigin="" style="width: 100%; height: auto" '
+                . 'width="' . $bannerData['width']
                 . '" height="' . $bannerData['height']
                 . '" alt="" src="' . $bannerData['image_url']
                 . '"/></a>';
