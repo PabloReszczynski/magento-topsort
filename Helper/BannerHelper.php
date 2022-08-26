@@ -25,16 +25,22 @@ class BannerHelper extends \Magento\Framework\App\Helper\AbstractHelper
      * @var \Magento\Catalog\Model\ProductRepository
      */
     private $productRepository;
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    private $logger;
 
     public function __construct(
         \Topsort\Integration\Model\ResourceModel\Banner\Grid\Collection $collection,
         \Topsort\Integration\Model\Api $api,
         \Magento\Catalog\Model\ProductRepository $productRepository,
+        \Psr\Log\LoggerInterface $logger,
         Context $context
     ) {
         $this->collection = $collection;
         $this->api = $api;
         $this->productRepository = $productRepository;
+        $this->logger = $logger;
         parent::__construct($context);
     }
 
@@ -65,6 +71,7 @@ class BannerHelper extends \Magento\Framework\App\Helper\AbstractHelper
         }
         $bannersFromApi = $this->api->getSponsoredBanners($data);
         if (empty($bannersFromApi['banners'])) {
+            $this->logger->debug("Empty banner result");
             return false;
         }
         $auctionBannerData = array_shift($bannersFromApi['banners']);
