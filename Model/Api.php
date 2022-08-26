@@ -88,10 +88,9 @@ class Api
                     ];
                 }
             }
+            $auctionId = "";
             if (isset($winners[0]) && isset($winners[0]['resolvedBidId'])) {
                 $auctionId = $result['results'][0]['winners'][0]['resolvedBidId'];
-            } else {
-                $auctiond = "";
             }
         }
 
