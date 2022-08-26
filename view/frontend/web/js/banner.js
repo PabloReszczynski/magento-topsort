@@ -180,7 +180,7 @@ define([
                     var params = new URLSearchParams(window.location.search);
                     var url = window.location.origin + "/topsort/banner/content/id/" + config.bannerId;
                     if (params.has("q")) {
-                        url += "?search=" + params.get("q");
+                        url += "?search=" + params.get("q").trim();
                     }
                     $.ajax({
                         url: url,
