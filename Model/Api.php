@@ -74,7 +74,6 @@ class Api
             $this->logger->critical($e->getPrevious());
             return [];
         }
-        $this->logger->info("TOPSORT: Results" . json_encode($results));
         $winnerList = [];
         if (isset($result['results'][0]['winners'])) {
             $winners = $result['results'][0]['winners'];
@@ -95,8 +94,6 @@ class Api
                 $auctiond = "";
             }
         }
-
-        $this->logger->info("TOPSORT Banner result:" . json_encode($winnerList));
 
         return [
             'banners' => $winnerList,
@@ -199,7 +196,6 @@ class Api
             $result = $this->getProvider()->report_impressions($data)->wait();
 
             $this->logger->info('TOPSORT: Impressions tracking. ' . count($data['impressions']) . ' impressions were sent to Topsort.');
-            $this->logger->debug("TOPSORT: Impressions tracking.\nRequest: " . $this->jsonHelper->jsonEncode($data) . "\nResponse: " . $this->jsonHelper->jsonEncode($result));
             return $result;
         } catch (TopsortException $e) {
             $prevException = $e->getPrevious();
