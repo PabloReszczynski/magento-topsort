@@ -46,9 +46,7 @@ class BannerHelper extends \Magento\Framework\App\Helper\AbstractHelper
             $html = '<a href="'
                 . $bannerData['promoted_url']
                 . '"><img crossorigin="" style="width: 100%; height: auto" '
-                . 'width="' . $bannerData['width']
-                . '" height="' . $bannerData['height']
-                . '" alt="" src="' . $bannerData['image_url']
+                . 'alt="" src="' . $bannerData['image_url']
                 . '"/></a>';
         } else {
             // TODO what to show if no banners returned?
