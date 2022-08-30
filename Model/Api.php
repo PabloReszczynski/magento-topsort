@@ -54,7 +54,7 @@ class Api
         $sdk = $this->getProvider();
 
         try {
-            $this->logger->info("TOPSORT: Running Banner Auction. aspectRatio=" . $bannerData['aspectRatio']);
+            $this->logger->info("TOPSORT: Running Banner Auction. aspectRatio=" . $bannerData['aspectRatio'] . ". searchQuery=" . $bannerData['searchQuery']);
             $data = ['slots' => 1, 'aspectRatio' => $bannerData['aspectRatio']];
             if (!empty($bannerData["searchQuery"])) {
                 $data["searchQuery"] = $bannerData["searchQuery"];
